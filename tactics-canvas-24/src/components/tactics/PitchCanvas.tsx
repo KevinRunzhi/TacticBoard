@@ -514,6 +514,9 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
   }, [currentTool, draggingArea, draggingBall, draggingPlayer, draggingText, isLineTool, pan, selectedAreaId, selectedLineId, selectedPlayerId, selectedTextId, spaceHeld]);
 
   const zoomPercent = Math.round(zoom * 100);
+  const lineToolHint = isLineTool
+    ? (pendingLineStart ? '请点击球场选择终点' : '请点击球场选择起点')
+    : null;
   const cursorStyle = currentTool === 'zone'
     ? 'crosshair'
     : spaceHeld
@@ -879,6 +882,12 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
             <Hand className="w-3.5 h-3.5" />
             画布平移模式
           </span>
+        </div>
+      )}
+
+      {lineToolHint && !spaceHeld && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 panel-bg border border-primary/30 rounded-md px-3 py-1.5 shadow-lg">
+          <span className="text-[11px] text-primary">{lineToolHint}</span>
         </div>
       )}
 

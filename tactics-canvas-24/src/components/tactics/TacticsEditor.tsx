@@ -150,12 +150,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
   const canExportGif = isDesktop;
   const hasMeaningfulContent = useMemo(() => hasMeaningfulProjectContent(state), [state]);
   const hasFormalProject = Boolean(projectId || activeProjectId);
-  const currentProjectName = !state.projectName.trim()
-    ? '新建战术板'
-    : state.projectName.includes('鏂板缓')
-      ? '新建战术板'
-      : state.projectName;
-  const displayProjectName = normalizeProjectNameValue(currentProjectName);
+  const displayProjectName = normalizeProjectNameValue(state.projectName);
   const changeFingerprint = useMemo(
     () => JSON.stringify({
       projectName: state.projectName,

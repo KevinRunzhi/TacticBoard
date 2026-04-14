@@ -42,14 +42,6 @@ interface DashboardLocationState {
   };
 }
 
-function normalizeProjectName(name: string) {
-  if (!name.trim()) {
-    return '新建战术板';
-  }
-
-  return name.includes('新建') ? '新建战术板' : name;
-}
-
 function MiniPitch({ variant }: { variant: number }) {
   const current = pitchVariants[variant % pitchVariants.length];
 

@@ -1,5 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { PitchCanvas } from '@/components/tactics/PitchCanvas';
 import type { MatchMeta, StepFrame, TacticsLine } from '@/types/tactics';
 
@@ -106,5 +106,69 @@ describe('pitch canvas line hit area', () => {
     const hitLine = container.querySelector('line[stroke="transparent"][stroke-width="14"]');
     expect(hitLine).not.toBeNull();
     expect(hitLine?.getAttribute('pointer-events')).toBe('stroke');
+  });
+
+  it('shows a line-tool hint and switches it after selecting the start point', () => {
+    const step: StepFrame = {
+      id: 'step-1',
+      label: 'Step 1',
+      description: '',
+      players: [],
+      lines: [],
+      ball: { x: 50, y: 50 },
+      texts: [],
+      areas: [],
+    };
+
+    const matchMeta: MatchMeta = {
+      title: '',
+      score: '',
+      minute: '',
+      phaseLabel: '',
+    };
+
+    const { container } = render(
+      <PitchCanvas
+        projectName="Training Board"
+        currentTool="line-pass"
+        players={[]}
+        lines={[]}
+        ball={{ x: 50, y: 50 }}
+        texts={[]}
+        areas={[]}
+        allSteps={[step]}
+        currentStepIndex={0}
+        matchMeta={matchMeta}
+        referenceImage={null}
+        fieldView="full"
+        fieldStyle="flat"
+        playerStyle="dot"
+        selectedPlayerId={null}
+        selectedLineId={null}
+        selectedTextId={null}
+        selectedAreaId={null}
+        onSelectPlayer={vi.fn()}
+        onSelectLine={vi.fn()}
+        onSelectText={vi.fn()}
+        onSelectArea={vi.fn()}
+        onAddPlayer={vi.fn()}
+        onAddText={vi.fn()}
+        onAddLine={vi.fn()}
+        onAddArea={vi.fn()}
+        onMovePlayer={vi.fn()}
+        onMoveBall={vi.fn()}
+        onMoveArea={vi.fn()}
+        onMoveText={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText('请点击球场选择起点')).toBeInTheDocument();
+
+    const svg = container.querySelector('svg');
+    expect(svg).not.toBeNull();
+
+    fireEvent.click(svg!, { clientX: 120, clientY: 160 });
+
+    expect(screen.getByText('请点击球场选择终点')).toBeInTheDocument();
   });
 });

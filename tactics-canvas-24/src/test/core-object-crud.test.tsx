@@ -107,6 +107,7 @@ describe('core object CRUD', () => {
     });
 
     expect(result.current.currentStep.texts).toHaveLength(1);
+    expect(result.current.currentStep.texts[0].text).toBe('文本');
     const textId = result.current.currentStep.texts[0].id;
 
     act(() => {

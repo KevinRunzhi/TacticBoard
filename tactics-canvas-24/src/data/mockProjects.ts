@@ -151,20 +151,6 @@ function createIsoMinutesAgo(minutesAgo: number) {
   return new Date(Date.now() - minutesAgo * 60 * 1000).toISOString();
 }
 
-function cloneStep(step: StepFrame, index: number): StepFrame {
-  return {
-    ...step,
-    id: step.id || `step-${index + 1}`,
-    label: step.label || `第 ${index + 1} 步`,
-    description: step.description ?? '',
-    players: step.players.map((player) => ({ ...player })),
-    lines: step.lines.map((line) => ({ ...line })),
-    ball: { ...step.ball },
-    texts: step.texts.map((text) => ({ ...text })),
-    areas: (step.areas ?? []).map((area) => ({ ...area })),
-  };
-}
-
 export function cloneEditorState(state: EditorState): EditorState {
   return {
     ...state,

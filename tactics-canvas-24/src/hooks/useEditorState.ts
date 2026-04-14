@@ -87,7 +87,7 @@ function buildInitialSnapshot(
       return {
         state: {
           ...savedState,
-          space: savedState.space ?? project?.space ?? workspace,
+          space: savedState.space ?? workspace,
         },
         entrySource: 'project-draft',
       };
@@ -406,7 +406,7 @@ export function useEditorState(
   const addTextAt = useCallback((x: number, y: number) => {
     const nextText: TextNote = {
       id: createTextId(),
-      text: 'Text',
+      text: '文本',
       x,
       y,
       style: 'body',

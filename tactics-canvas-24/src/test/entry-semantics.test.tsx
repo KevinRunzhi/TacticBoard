@@ -53,6 +53,25 @@ describe('editor entry semantics', () => {
     expect(result.current.state.fieldFormat).toBe('5v5');
   });
 
+  it('opens a project draft without relying on an undefined project fallback', () => {
+    const state = createBlankEditorState({
+      projectName: '带草稿的正式项目',
+      fieldFormat: '8v8',
+      space: 'personal',
+    });
+
+    const projectId = saveProjectState(undefined, state);
+    saveDraftState(projectId, {
+      ...state,
+      projectName: '带草稿的正式项目-草稿',
+    });
+
+    const { result } = renderHook(() => useEditorState(projectId, 'personal', 'project'));
+
+    expect(result.current.state.projectName).toBe('带草稿的正式项目-草稿');
+    expect(result.current.state.space).toBe('personal');
+  });
+
   it('uses preset quick start as a forced new project and ignores resume draft', () => {
     const draftState = createBlankEditorState({
       projectName: '不应被恢复的草稿',
