@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 228 14% 7%;
+    --foreground: 210 20% 90%;
+
+    --card: 225 15% 10%;
+    --card-foreground: 210 20% 90%;
+
+    --popover: 225 15% 12%;
+    --popover-foreground: 210 20% 90%;
+
+    --primary: 152 60% 48%;
+    --primary-foreground: 228 14% 7%;
+
+    --secondary: 225 14% 16%;
+    --secondary-foreground: 210 20% 80%;
+
+    --muted: 225 12% 14%;
+    --muted-foreground: 215 15% 55%;
+
+    --accent: 152 50% 42%;
+    --accent-foreground: 228 14% 7%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 225 12% 18%;
+    --input: 225 12% 18%;
+    --ring: 152 60% 48%;
+
+    --radius: 0.5rem;
+
+    /* Tactics board specific */
+    --pitch: 145 55% 32%;
+    --pitch-line: 145 30% 55%;
+    --pitch-grass: 142 50% 28%;
+    --panel: 225 15% 9%;
+    --panel-hover: 225 14% 14%;
+    --toolbar: 225 16% 11%;
+    --team-home: 210 90% 56%;
+    --team-away: 0 80% 58%;
+    --line-run: 45 95% 60%;
+    --line-pass: 210 90% 65%;
+    --line-dribble: 152 60% 50%;
+    --line-shoot: 0 80% 60%;
+    --line-press: 280 60% 60%;
+    --step-active: 152 60% 48%;
+    --step-inactive: 225 12% 20%;
+
+    --sidebar-background: 225 15% 9%;
+    --sidebar-foreground: 210 20% 80%;
+    --sidebar-primary: 152 60% 48%;
+    --sidebar-primary-foreground: 228 14% 7%;
+    --sidebar-accent: 225 14% 16%;
+    --sidebar-accent-foreground: 210 20% 80%;
+    --sidebar-border: 225 12% 18%;
+    --sidebar-ring: 152 60% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  }
+}
+
+@layer utilities {
+  .pitch-bg {
+    background: linear-gradient(
+      180deg,
+      hsl(var(--pitch)) 0%,
+      hsl(var(--pitch-grass)) 50%,
+      hsl(var(--pitch)) 100%
+    );
+  }
+
+  .panel-bg {
+    background-color: hsl(var(--panel));
+  }
+
+  .toolbar-bg {
+    background-color: hsl(var(--toolbar));
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 2px;
+  }
+
+  .prop-input {
+    @apply h-7 bg-secondary rounded px-2 text-xs text-foreground outline-none focus:ring-1 focus:ring-primary border border-transparent;
+  }
+
+  .prop-select {
+    @apply h-7 bg-secondary rounded px-2 text-xs text-foreground flex items-center gap-1 cursor-pointer hover:bg-secondary/80;
+  }
+
+  .card-glow {
+    position: relative;
+    overflow: hidden;
+  }
+  .card-glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, hsla(0,0%,100%,0) 10%, hsla(0,0%,100%,0.12) 50%, hsla(0,0%,100%,0) 90%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+  }
+  .card-glow:hover::before {
+    opacity: 1;
+  }
+  .card-glow:hover {
+    box-shadow: 0 2px 20px -6px hsla(152, 60%, 48%, 0.08), 0 1px 8px -2px rgba(0,0,0,0.2);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
