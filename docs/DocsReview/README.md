@@ -43,3 +43,7 @@ This directory stores review notes, self-audits, cross-check reports, and implem
 - `implementation-review-17-step-management-2026-04-02.md`
 - `implementation-review-18-core-step-retest-2026-04-02.md`
 - `implementation-review-19-code-review-r2-cleanup-2026-04-02.md`
+- `implementation-review-20-part1-demo-blockers-2026-04-03.md`
+- `implementation-review-21-editor-usability-batch-2026-04-03.md`
+- `implementation-review-22-state-roundtrip-and-banner-2026-04-14.md`
+- `acceptance-review-v1-r1-2026-04-03.md`

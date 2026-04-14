@@ -22,6 +22,12 @@ Derived implementation layers:
 - `07-decisions/`
 - `DocsReview/`
 
+Current quality / acceptance entry points:
+
+- `06-quality/acceptance-checklist.md`
+- `06-quality/v1验收标准.md`
+- `DocsReview/acceptance-review-v1-r1-2026-04-03.md`
+
 Recommended reading order:
 
 1. `football-tactics-board-prd.md`
