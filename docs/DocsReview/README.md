@@ -47,3 +47,7 @@ This directory stores review notes, self-audits, cross-check reports, and implem
 - `implementation-review-21-editor-usability-batch-2026-04-03.md`
 - `implementation-review-22-state-roundtrip-and-banner-2026-04-14.md`
 - `acceptance-review-v1-r1-2026-04-03.md`
+- `packaging-plan-review-r1-2026-04-15.md`
+- `packaging-plan-review-r2-2026-04-15.md`
+- `packaging-plan-review-r3-2026-04-15.md`
+- `packaging-plan-review-r4-2026-04-15.md`
