@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppShellV2 } from "@/components/v2/AppShellV2";
 import { WorkspaceProvider } from "@/context/workspace-context.tsx";
+import { createAppRouter } from "@/lib/platform";
 import Dashboard from "./pages/DashboardV2";
 import Projects from "./pages/ProjectsV2";
 import Settings from "./pages/SettingsV2";
@@ -19,7 +20,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <WorkspaceProvider>
-        <BrowserRouter>
+        {createAppRouter(
           <Routes>
             <Route element={<AppShellV2 />}>
               <Route path="/" element={<Dashboard />} />
@@ -30,7 +31,7 @@ const App = () => (
             <Route path="/editor/:projectId" element={<Editor />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
+        )}
       </WorkspaceProvider>
     </TooltipProvider>
   </QueryClientProvider>

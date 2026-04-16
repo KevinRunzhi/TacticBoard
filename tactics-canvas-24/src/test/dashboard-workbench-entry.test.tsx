@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import DashboardV2 from '@/pages/DashboardV2';
 import { clearAllLocalProjectData, createBlankEditorState, saveDraftState, saveProjectState } from '@/data/mockProjects';
+import { routerFutureFlags } from '@/lib/platform';
 
 describe('dashboard workbench entry', () => {
   beforeEach(() => {
@@ -12,7 +13,7 @@ describe('dashboard workbench entry', () => {
 
   it('shows the three main entry routes even when there is no local project yet', () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={routerFutureFlags}>
         <DashboardV2 />
       </MemoryRouter>,
     );
@@ -40,7 +41,7 @@ describe('dashboard workbench entry', () => {
     saveDraftState(undefined, draftState);
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={routerFutureFlags}>
         <DashboardV2 />
       </MemoryRouter>,
     );

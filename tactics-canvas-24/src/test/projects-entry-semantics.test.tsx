@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ProjectsV2 from '@/pages/ProjectsV2';
 import { clearAllLocalProjectData, createBlankEditorState, saveDraftState, saveProjectState } from '@/data/mockProjects';
+import { routerFutureFlags } from '@/lib/platform';
 
 describe('projects entry semantics', () => {
   beforeEach(() => {
@@ -26,7 +27,7 @@ describe('projects entry semantics', () => {
     saveDraftState(undefined, draftState);
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={routerFutureFlags}>
         <ProjectsV2 />
       </MemoryRouter>,
     );
