@@ -46,6 +46,11 @@ This directory stores review notes, self-audits, cross-check reports, and implem
 - `implementation-review-20-part1-demo-blockers-2026-04-03.md`
 - `implementation-review-21-editor-usability-batch-2026-04-03.md`
 - `implementation-review-22-state-roundtrip-and-banner-2026-04-14.md`
+- `implementation-review-23-windows-phase1-tauri-base-2026-04-15.md`
+- `implementation-review-24-windows-phase2-router-2026-04-15.md`
+- `implementation-review-25-windows-phase3-export-save-2026-04-15.md`
+- `implementation-review-26-windows-phase4-reference-import-2026-04-15.md`
+- `implementation-review-27-windows-phase5-final-acceptance-2026-04-15.md`
 - `acceptance-review-v1-r1-2026-04-03.md`
 - `packaging-plan-review-r1-2026-04-15.md`
 - `packaging-plan-review-r2-2026-04-15.md`
