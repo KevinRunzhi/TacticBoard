@@ -27,7 +27,7 @@ export function TopNavV2() {
             <span className="text-[10px] font-bold leading-none text-primary-foreground">T</span>
           </div>
           <span className="hidden text-[13px] font-medium tracking-tight text-foreground/90 sm:inline">
-            TacticStudio
+            TacticBoard战术板
           </span>
         </button>
 

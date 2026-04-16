@@ -408,7 +408,7 @@ function AboutSection() {
         desc="当前版本信息与产品边界说明。"
       />
       <div className="space-y-3 rounded-xl border border-border/40 bg-card p-4 shadow-sm">
-        <p className="text-[13px] font-medium text-foreground/85">TacticStudio v1.0.0</p>
+        <p className="text-[13px] font-medium text-foreground/85">TacticBoard战术板 v1.0.0</p>
         <p className="text-[11px] leading-5 text-muted-foreground/60">
           当前版本优先保证“新建 → 编辑 → 保存 → 项目管理 → 导出”这条主链路稳定可用。
         </p>
