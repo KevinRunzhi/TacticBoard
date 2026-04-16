@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { normalizeProjectNameValue } from '@/lib/project-name';
 import { createDefaultExportConfig } from '@/lib/export-config';
+import { saveExportBinary } from '@/lib/export-save';
 import { getGifConstraintMessage } from '@/lib/tactics-export';
 import { toast } from '@/components/ui/sonner';
 import { TopToolbar, type ToolbarSaveStatusTone } from './TopToolbar';
@@ -379,10 +380,24 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
     }
 
     try {
-      if (exportConfig.format === 'gif') {
-        await pitchCanvasRef.current.exportGif(displayProjectName, exportConfig);
-      } else {
-        await pitchCanvasRef.current.exportPng(displayProjectName, exportConfig);
+      const bytes =
+        exportConfig.format === 'gif'
+          ? await pitchCanvasRef.current.exportGif(displayProjectName, exportConfig)
+          : await pitchCanvasRef.current.exportPng(displayProjectName, exportConfig);
+      const saveResult = await saveExportBinary({
+        fileName: displayProjectName,
+        format: exportConfig.format,
+        bytes,
+      });
+      if (saveResult.status === 'cancelled') {
+        toast.message('已取消导出保存');
+        return;
+      }
+      if (saveResult.status === 'failed') {
+        toast.error('导出失败，请稍后重试', {
+          description: saveResult.reason,
+        });
+        return;
       }
       setExportDialogOpen(false);
       toast.success('已导出当前战术板', {

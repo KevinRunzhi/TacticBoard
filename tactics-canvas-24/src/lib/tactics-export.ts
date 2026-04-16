@@ -109,15 +109,6 @@ export function getGifConstraintMessage(stepCount: number, speed: GifSpeed) {
   return `当前 GIF 预计时长约 ${Math.ceil(estimatedDuration / 1000)} 秒，已超过 15 秒上限。请减少步骤数量、降低清晰度或选择更快的播放速度。`;
 }
 
-function downloadBlob(blob: Blob, fileName: string) {
-  const objectUrl = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = objectUrl;
-  link.download = fileName;
-  link.click();
-  URL.revokeObjectURL(objectUrl);
-}
-
 function drawRoundedRect(
   context: CanvasRenderingContext2D,
   x: number,
@@ -569,6 +560,27 @@ async function canvasToBlob(canvas: HTMLCanvasElement, type: string) {
   });
 }
 
+async function blobToBytes(blob: Blob) {
+  return new Uint8Array(await blob.arrayBuffer());
+}
+
+export function createGifReadbackCanvas(sourceCanvas: HTMLCanvasElement, width: number, height: number) {
+  const canvas =
+    sourceCanvas.ownerDocument?.createElement('canvas') ?? document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext('2d', { willReadFrequently: true });
+  if (!context) {
+    throw new Error('Unable to create GIF export canvas context.');
+  }
+
+  return {
+    canvas,
+    context,
+  };
+}
+
 function getSvgExportSize(svg: SVGSVGElement) {
   const viewBox = svg.viewBox.baseVal;
   if (viewBox && viewBox.width > 0 && viewBox.height > 0) {
@@ -610,10 +622,9 @@ async function loadSvgImage(svgMarkup: string) {
 
 export async function exportSvgAsPng(options: {
   svg: SVGSVGElement;
-  fileName: string;
   scale?: number;
 }) {
-  const { svg, fileName, scale = 1 } = options;
+  const { svg, scale = 1 } = options;
   const { width, height } = getSvgExportSize(svg);
   const nextSvg = svg.cloneNode(true) as SVGSVGElement;
   nextSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -636,18 +647,17 @@ export async function exportSvgAsPng(options: {
   context.drawImage(image, 0, 0, canvas.width, canvas.height);
 
   const blob = await canvasToBlob(canvas, 'image/png');
-  downloadBlob(blob, fileName.endsWith('.png') ? fileName : `${fileName}.png`);
+  return blobToBytes(blob);
 }
 
-export async function exportStepAsPng(options: RenderFrameOptions, fileName: string) {
+export async function exportStepAsPng(options: RenderFrameOptions) {
   await renderFrameToCanvas(options);
   const blob = await canvasToBlob(options.canvas, 'image/png');
-  downloadBlob(blob, fileName.endsWith('.png') ? fileName : `${fileName}.png`);
+  return blobToBytes(blob);
 }
 
 export async function exportStepsAsGif(
   options: Omit<RenderFrameOptions, 'step' | 'previousStep'> & { steps: StepFrame[] },
-  fileName: string,
 ) {
   const constraintMessage = getGifConstraintMessage(options.steps.length, options.config.gifSpeed);
   if (constraintMessage) {
@@ -659,7 +669,11 @@ export async function exportStepsAsGif(
   const gifWidth = layout.viewBoxWidth * exportScale;
   const gifHeight = layout.viewBoxHeight * exportScale;
   const encoder = GIFEncoder();
-  const workingCanvas = options.canvas;
+  const { canvas: workingCanvas, context: readbackContext } = createGifReadbackCanvas(
+    options.canvas,
+    gifWidth,
+    gifHeight,
+  );
   const delay = getGifDelayMs(options.config.gifSpeed);
   const shouldUseAlpha = options.config.transparentBackground;
 
@@ -674,12 +688,7 @@ export async function exportStepsAsGif(
       previousStep,
     });
 
-    const context = workingCanvas.getContext('2d');
-    if (!context) {
-      throw new Error('Unable to read GIF export pixels.');
-    }
-
-    const imageData = context.getImageData(0, 0, gifWidth, gifHeight).data;
+    const imageData = readbackContext.getImageData(0, 0, gifWidth, gifHeight).data;
     const format = shouldUseAlpha ? 'rgba4444' : 'rgb565';
     const palette = quantize(imageData, 256, shouldUseAlpha ? { format, oneBitAlpha: true } : { format });
     const index = applyPalette(imageData, palette, format);
@@ -698,5 +707,5 @@ export async function exportStepsAsGif(
 
   encoder.finish();
   const blob = new Blob([encoder.bytes()], { type: 'image/gif' });
-  downloadBlob(blob, fileName.endsWith('.gif') ? fileName : `${fileName}.gif`);
+  return blobToBytes(blob);
 }
