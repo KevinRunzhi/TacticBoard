@@ -31,7 +31,12 @@ export function TabletLeftDrawer({
       <div className="relative w-[280px] h-full panel-bg border-r border-border shadow-2xl flex flex-col animate-in slide-in-from-left duration-200">
         <div className="flex items-center justify-between px-3 py-2 border-b border-border shrink-0">
           <span className="text-sm font-medium text-foreground">工具面板</span>
-          <button onClick={onClose} className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary">
+          <button
+            onClick={onClose}
+            aria-label="关闭工具抽屉"
+            title="关闭工具抽屉"
+            className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>

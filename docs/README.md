@@ -1,8 +1,8 @@
 # Docs
 
-This folder now keeps a small, canonical documentation set for the project.
+This folder keeps the active documentation baseline for the project.
 
-Current active baseline:
+## Current active baseline
 
 - `football-tactics-board-prd.md`
   Product definition, first-release scope, platform strategy, and non-goals.
@@ -11,7 +11,7 @@ Current active baseline:
 - `football-tactics-board-information-architecture.md`
   Current V1 page structure, navigation boundaries, shell design, and key user flows.
 
-Derived implementation layers:
+## Derived implementation layers
 
 - `01-product/`
 - `02-ux/`
@@ -22,19 +22,29 @@ Derived implementation layers:
 - `07-decisions/`
 - `DocsReview/`
 
-Current quality / acceptance entry points:
+## Current quality / acceptance entry points
 
 - `06-quality/acceptance-checklist.md`
 - `06-quality/v1验收标准.md`
+- `06-quality/v1手动测试清单.md`
 - `DocsReview/acceptance-review-v1-r1-2026-04-03.md`
 
-Recommended reading order:
+## Current packaging / engineering entry points
+
+- `05-engineering/windows-packaging-plan.md`
+- `windows-packaging/windows-internal-interface-spec.md`
+- `windows-packaging/windows-technical-architecture.md`
+- `windows-packaging/windows-data-structure.md`
+- `windows-packaging/windows-acceptance-standard.md`
+- `windows-packaging/windows-development-guide.md`
+
+## Recommended reading order
 
 1. `football-tactics-board-prd.md`
 2. `football-tactics-board-requirements.md`
 3. `football-tactics-board-information-architecture.md`
 
-Current documentation rule:
+## Current documentation rule
 
 - Keep the three top-level baseline documents as the primary source of truth.
 - Use `01-07` as derived implementation documents, not as competing baselines.
@@ -42,7 +52,7 @@ Current documentation rule:
 - Historical drafts, layered specs, reviews, and idea notes should live under `archive/`.
 - If new docs are added later, prefer topic-based documents over large nested spec trees.
 
-Notes:
+## Notes
 
 - As of `2026-03-30`, older layered product / UX / functional / engineering / quality docs have been archived because they reflected the previous web-platform direction and would conflict with the current local-app baseline.
 - A fresh `01-07` layered set has now been rebuilt from the current PRD, requirements, and information architecture.

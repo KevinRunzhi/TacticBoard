@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   GIF_MAX_DURATION_MS,
+  createGifReadbackCanvas,
   getEstimatedGifDurationMs,
   getGifConstraintMessage,
   getGifDelayMs,
@@ -27,5 +28,28 @@ describe('tactics export utilities', () => {
 
   it('returns null when the gif duration is within the first-phase limit', () => {
     expect(getGifConstraintMessage(8, 'fast')).toBeNull();
+  });
+
+  it('creates a dedicated gif readback canvas with willReadFrequently enabled', () => {
+    const getContext = vi.fn(() => ({ getImageData: vi.fn() }));
+    const createdCanvas = {
+      width: 0,
+      height: 0,
+      getContext,
+    } as unknown as HTMLCanvasElement;
+    const ownerDocument = {
+      createElement: vi.fn(() => createdCanvas),
+    } as unknown as Document;
+    const sourceCanvas = {
+      ownerDocument,
+    } as unknown as HTMLCanvasElement;
+
+    const result = createGifReadbackCanvas(sourceCanvas, 680, 1000);
+
+    expect(ownerDocument.createElement).toHaveBeenCalledWith('canvas');
+    expect(getContext).toHaveBeenCalledWith('2d', { willReadFrequently: true });
+    expect(result.canvas.width).toBe(680);
+    expect(result.canvas.height).toBe(1000);
+    expect(result.context).toBeTruthy();
   });
 });

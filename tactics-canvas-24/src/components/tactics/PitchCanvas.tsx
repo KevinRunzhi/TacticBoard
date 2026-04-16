@@ -59,8 +59,8 @@ export interface PitchCanvasHandle {
   zoomOut: () => void;
   fitToView: () => void;
   resetView: () => void;
-  exportPng: (fileName: string, config?: ExportConfig) => Promise<void>;
-  exportGif: (fileName: string, config?: ExportConfig) => Promise<void>;
+  exportPng: (fileName: string, config?: ExportConfig) => Promise<Uint8Array>;
+  exportGif: (fileName: string, config?: ExportConfig) => Promise<Uint8Array>;
 }
 
 const lineColors: Record<string, string> = {
@@ -552,16 +552,15 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
       }
 
       const exportSvg = applyExportConfigToSvg(sourceSvg, exportConfig);
-      await exportSvgAsPng({
+      return exportSvgAsPng({
         svg: exportSvg,
-        fileName,
         scale: getExportScale(exportConfig),
       });
     },
     exportGif: async (fileName: string, config?: ExportConfig) => {
       const exportConfig = config ?? createDefaultExportConfig();
       const canvas = document.createElement('canvas');
-      await exportStepsAsGif({
+      return exportStepsAsGif({
         canvas,
         projectName,
         matchMeta,
@@ -571,7 +570,7 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
         playerStyle,
         steps: allSteps,
         config: exportConfig,
-      }, fileName);
+      });
     },
   }), [allSteps, fieldStyle, fieldView, fitToView, matchMeta, playerStyle, projectName, referenceImage]);
 

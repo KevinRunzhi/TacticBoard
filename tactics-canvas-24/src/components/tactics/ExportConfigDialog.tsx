@@ -238,15 +238,29 @@ function ToggleRow({
   disabled?: boolean;
   onChange: (checked: boolean) => void;
 }) {
+  const id = `export-toggle-${label
+    .toLowerCase()
+    .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-')
+    .replace(/^-+|-+$/g, '')}`;
+  const descriptionId = `${id}-description`;
+
   return (
-    <label className={`flex items-start justify-between gap-3 rounded-lg border border-border/50 bg-background/40 px-3 py-2 text-left ${disabled ? 'opacity-60' : ''}`}>
+    <label
+      htmlFor={id}
+      className={`flex items-start justify-between gap-3 rounded-lg border border-border/50 bg-background/40 px-3 py-2 text-left ${disabled ? 'opacity-60' : ''}`}
+    >
       <div className="min-w-0">
         <div className="text-sm font-medium text-foreground">{label}</div>
-        <div className="mt-1 text-xs leading-5 text-muted-foreground">{description}</div>
+        <div id={descriptionId} className="mt-1 text-xs leading-5 text-muted-foreground">
+          {description}
+        </div>
       </div>
       <input
+        id={id}
         type="checkbox"
         className="mt-1 h-4 w-4 shrink-0 accent-primary"
+        aria-label={label}
+        aria-describedby={descriptionId}
         checked={checked}
         disabled={disabled}
         onChange={(event) => {

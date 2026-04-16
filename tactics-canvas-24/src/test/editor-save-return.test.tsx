@@ -5,6 +5,7 @@ import DashboardV2 from '@/pages/DashboardV2';
 import EditorPage from '@/pages/Index';
 import { WorkspaceProvider } from '@/context/workspace-context.tsx';
 import { clearAllLocalProjectData } from '@/data/mockProjects';
+import { routerFutureFlags } from '@/lib/platform';
 
 describe('editor save and return flow', () => {
   beforeEach(() => {
@@ -15,7 +16,7 @@ describe('editor save and return flow', () => {
   it('shows first-save feedback in the editor and on the workbench after returning', async () => {
     render(
       <WorkspaceProvider>
-        <MemoryRouter initialEntries={['/editor?mode=new']}>
+        <MemoryRouter future={routerFutureFlags} initialEntries={['/editor?mode=new']}>
           <Routes>
             <Route path="/" element={<DashboardV2 />} />
             <Route path="/editor" element={<EditorPage />} />
