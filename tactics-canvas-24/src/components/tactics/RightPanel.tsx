@@ -15,6 +15,8 @@ import {
   Type,
   User,
 } from 'lucide-react';
+import { toast } from '@/components/ui/sonner';
+import { canUseNativeImageImport, pickImageFile } from '@/lib/asset-import';
 import { AreaObject, MatchMeta, Player, PlayerStyle, ReferenceImage, TacticsLine, TextNote } from '@/types/tactics';
 
 interface RightPanelProps {
@@ -481,6 +483,24 @@ function ProjectProperties({
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const handleReferenceImageButtonClick = async () => {
+    if (!canUseNativeImageImport()) {
+      fileInputRef.current?.click();
+      return;
+    }
+
+    const result = await pickImageFile();
+    if (result.status === 'selected') {
+      onReferenceImageImport(result.file);
+      return;
+    }
+    if (result.status === 'failed') {
+      toast.error('参考底图导入失败，请重新选择图片', {
+        description: result.reason,
+      });
+    }
+  };
+
   return (
     <div className="space-y-4">
       <PropSection title="项目信息">
@@ -528,7 +548,9 @@ function ProjectProperties({
         />
 
         <button
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => {
+            void handleReferenceImageButtonClick();
+          }}
           className="flex w-full items-center justify-center gap-2 rounded-lg border border-border/60 bg-secondary/40 px-3 py-2 text-xs font-medium text-foreground/80 transition-colors hover:bg-secondary"
         >
           <ImageUp className="h-3.5 w-3.5" />
