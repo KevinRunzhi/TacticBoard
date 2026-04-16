@@ -51,23 +51,34 @@ export function MobileStepsDrawer({
           <div className="flex items-center gap-2">
             <button
               onClick={() => onStepChange(Math.max(0, currentIndex - 1))}
+              aria-label="切换到上一步"
+              title="切换到上一步"
               className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={onTogglePlay}
+              aria-label={isPlaying ? '暂停步骤播放' : '播放步骤'}
+              title={isPlaying ? '暂停步骤播放' : '播放步骤'}
               className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center"
             >
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
             </button>
             <button
               onClick={() => onStepChange(Math.min(steps.length - 1, currentIndex + 1))}
+              aria-label="切换到下一步"
+              title="切换到下一步"
               className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
-            <button onClick={onClose} className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground ml-2">
+            <button
+              onClick={onClose}
+              aria-label="关闭步骤抽屉"
+              title="关闭步骤抽屉"
+              className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground ml-2"
+            >
               <X className="w-4 h-4" />
             </button>
           </div>

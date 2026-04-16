@@ -77,7 +77,12 @@ export function TabletRightDrawer({
       <div className="relative flex h-full w-[300px] flex-col border-l border-border shadow-2xl animate-in slide-in-from-right duration-200 panel-bg">
         <div className="flex shrink-0 items-center justify-between border-b border-border px-3 py-2">
           <span className="text-sm font-medium text-foreground">{title}</span>
-          <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-secondary hover:text-foreground">
+          <button
+            onClick={onClose}
+            aria-label="关闭属性抽屉"
+            title="关闭属性抽屉"
+            className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-secondary hover:text-foreground"
+          >
             <X className="h-4 w-4" />
           </button>
         </div>
