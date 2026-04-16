@@ -2,16 +2,19 @@
 
 这个目录用于存放 Android 打包相关的专项文档。
 
-当前文档：
+当前专项文档：
 
 - `android-technical-architecture.md`
 - `android-internal-interface-spec.md`
 - `android-acceptance-standard.md`
 - `android-development-guide.md`
 
-关联文档：
+上游总路线文档：
 
 - `../05-engineering/android-packaging-plan.md`
+
+验证留痕模板：
+
 - `../DocsReview/android-technical-validation-template.md`
 
 使用规则：

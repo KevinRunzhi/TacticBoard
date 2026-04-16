@@ -422,6 +422,38 @@ Android 打包分支建议按功能拆小提交：
 - 验证稳定后，再合回主开发分支
 - 不建议在 Android 实现未稳定前直接合进默认主分支
 
+### 12.2 范围收窄治理规则
+
+如果在实施过程中发现：
+
+- Android 第一阶段某项能力本轮做不完
+- 某条验收边界需要临时放宽
+- 某类能力希望从“第一阶段默认承诺”降级为“后续再做”
+
+必须先做的不是口头说明，而是先更新：
+
+- `docs/05-engineering/android-packaging-plan.md`
+- `docs/android-packaging/android-acceptance-standard.md`
+
+必要时再同步更新：
+
+- `docs/android-packaging/android-technical-architecture.md`
+- `docs/android-packaging/android-internal-interface-spec.md`
+
+然后才能：
+
+- 在评审记录里写“本轮未纳入”
+- 在对外结论里宣称当前阶段完成
+
+不允许的做法：
+
+- 先口头收窄范围，文档不改
+- 先按缩小后的范围宣布完成，之后再补文档
+
+原则：
+
+- `完成标准以方案文档和验收文档为准，不以临时口头约定为准。`
+
 ## 13. 与现有 Web / Windows 的关系
 
 当前这样做的目标之一，就是让 Android 能站在现有 Web / Windows 基线上继续演进，而不是另起炉灶。
