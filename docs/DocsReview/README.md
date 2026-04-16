@@ -12,6 +12,23 @@ This directory stores review notes, self-audits, cross-check reports, and implem
   - remaining risks
 - Review conclusions should not stop at "issues found"; the related docs or code should be updated in the same round.
 
+## Templates
+
+- `android-technical-validation-template.md`
+
+Recommended usage:
+
+- Copy the template before each Android validation round.
+- Recommended file naming:
+  - `implementation-review-android-phaseX-topic-YYYY-MM-DD.md`
+- Use it when validating:
+  - Android startup and routing
+  - touch main flow
+  - PNG export and system share
+  - asset import through the Android system picker
+  - lifecycle / orientation behavior
+  - Web and Windows regression watchpoints
+
 ## Current Files
 
 - `docs-review-r1-2026-03-30.md`

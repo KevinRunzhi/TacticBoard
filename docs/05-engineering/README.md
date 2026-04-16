@@ -9,6 +9,7 @@
 - `state-management.md`
 - `persistence-strategy.md`
 - `windows-packaging-plan.md`
+- `android-packaging-plan.md`
 
 专项补充文档：
 
@@ -17,6 +18,12 @@
 - `../windows-packaging/windows-data-structure.md`
 - `../windows-packaging/windows-acceptance-standard.md`
 - `../windows-packaging/windows-development-guide.md`
+- `../android-packaging/android-technical-architecture.md`
+- `../android-packaging/android-internal-interface-spec.md`
+
+专项验证留痕模板：
+
+- `../DocsReview/android-technical-validation-template.md`
 
 使用规则：
 

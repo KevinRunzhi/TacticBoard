@@ -32,11 +32,21 @@ This folder keeps the active documentation baseline for the project.
 ## Current packaging / engineering entry points
 
 - `05-engineering/windows-packaging-plan.md`
+- `05-engineering/android-packaging-plan.md`
 - `windows-packaging/windows-internal-interface-spec.md`
 - `windows-packaging/windows-technical-architecture.md`
 - `windows-packaging/windows-data-structure.md`
 - `windows-packaging/windows-acceptance-standard.md`
 - `windows-packaging/windows-development-guide.md`
+- `android-packaging/android-technical-architecture.md`
+- `android-packaging/android-internal-interface-spec.md`
+- `android-packaging/android-acceptance-standard.md`
+- `android-packaging/android-development-guide.md`
+
+## Validation / review workflow entry points
+
+- `DocsReview/README.md`
+- `DocsReview/android-technical-validation-template.md`
 
 ## Recommended reading order
 
