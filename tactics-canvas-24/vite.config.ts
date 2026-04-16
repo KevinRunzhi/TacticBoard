@@ -4,12 +4,26 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
+const tauriHost = process.env.TAURI_DEV_HOST;
+
 export default defineConfig(({ mode }) => ({
+  clearScreen: false,
   server: {
-    host: "::",
+    host: tauriHost || "::",
     port: 8080,
-    hmr: {
-      overlay: false,
+    strictPort: true,
+    hmr: tauriHost
+      ? {
+          host: tauriHost,
+          port: 8081,
+          protocol: "ws",
+          overlay: false,
+        }
+      : {
+          overlay: false,
+        },
+    watch: {
+      ignored: ["**/src-tauri/**"],
     },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),

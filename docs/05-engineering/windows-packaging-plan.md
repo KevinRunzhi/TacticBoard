@@ -121,6 +121,11 @@ Windows 端优先采用：
 3. 安装 Visual Studio Build Tools，并勾选 C++ 桌面开发相关组件
 4. 确认系统已安装 Microsoft Edge WebView2 Runtime
 
+补充说明：
+
+- 安装 `rustup` 后，需重新打开终端或刷新当前会话 PATH，确保 `cargo` / `rustc` 可直接执行
+- 第一次运行 `npm run tauri:dev` 时会进行冷编译，耗时可能明显高于后续增量构建
+
 额外约束：
 
 - Tauri 开发模式下的 `devUrl` 必须与当前 Vite 开发端口保持一致
