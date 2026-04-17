@@ -188,6 +188,7 @@
 - LocalDraft 只服务恢复，不替代正式项目
 - 自动保存失败时保留上一份成功草稿
 - LocalDraft 应能指向其对应项目，或在“新建未命名项目”场景下持有关联中的临时项目身份
+- 最近项目列表与项目索引由 `ProjectIndexEntry` 负责，不由 `LocalDraft` 承担
 
 ## 8. MatchMeta
 
@@ -218,6 +219,7 @@
 - ProjectIndexEntry 服务于项目列表与最近项目展示
 - 它是项目元信息索引，不替代 Project 正文
 - 索引失效时允许清理条目，不影响正式项目结构
+- 最近项目与项目列表的轻量入口默认由 `ProjectIndexEntry` 提供，不应回写到 `LocalDraft` 语义里
 
 ## 10. ExportConfig
 
@@ -236,6 +238,8 @@
 
 - 第一阶段不支持用户保存大量自定义导出预设
 - ExportConfig 更接近导出时的临时配置，而不是独立资产
+- `ExportConfig` 是当前导出参数的规范名称；如果旧文档仍出现导出预设类旧叫法，应统一映射到 `ExportConfig`
+- 第一阶段默认不把 `ExportConfig` 作为独立持久化对象写入本地项目、草稿或项目索引
 
 ## 11. 暂不进入 V1 的实体
 

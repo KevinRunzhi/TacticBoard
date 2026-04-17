@@ -44,6 +44,10 @@
 - 异常提示与失败兜底
 - 验收清单和测试矩阵收口
 
+说明：
+
+- Android 打包的阶段细化、关闭条件和验证顺序，以 `docs/05-engineering/android-packaging-plan.md` 与 `docs/android-packaging/` 专项文档为准
+
 ### Phase 4：后续增强评估
 
 - 项目文件与备份包

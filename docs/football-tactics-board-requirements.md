@@ -86,6 +86,8 @@
 - Android 首发以 Releases 下载 APK 为主
 - 应用升级默认不得清空本地项目和自定义阵型模板
 - 如安装方式存在数据风险，必须在更新说明中明确提示
+- Android 第一阶段的技术路线、阶段关闭规则、构建约束和验证流程，以 `docs/05-engineering/android-packaging-plan.md` 与 `docs/android-packaging/` 专项文档为准
+- 如果 Android 专项文档与本节的首发承诺出现漂移，必须先更新本节或 Android 专项文档，再宣称 Android 第一阶段完成
 
 ### 5. 离线与本地保存
 
