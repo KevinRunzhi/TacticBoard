@@ -15,6 +15,7 @@ This directory stores review notes, self-audits, cross-check reports, and implem
 ## Templates
 
 - `android-technical-validation-template.md`
+- `android-device-compatibility-validation-template.md`
 
 Recommended usage:
 
@@ -28,6 +29,19 @@ Recommended usage:
   - asset import through the Android system picker
   - lifecycle / orientation behavior
   - Web and Windows regression watchpoints
+
+Additional compatibility-specific template:
+
+- `android-device-compatibility-validation-template.md`
+
+Recommended usage:
+
+- Copy it when the round is explicitly about P0 / P1 / P2 device coverage.
+- Use it to record:
+  - which devices were tested
+  - which tier each device belongs to
+  - which scenarios passed / failed / were only observed
+  - whether the result blocks Android Phase 1 completion
 
 ## Current Files
 

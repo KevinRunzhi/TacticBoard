@@ -7,6 +7,8 @@
 - `android-technical-architecture.md`
 - `android-internal-interface-spec.md`
 - `android-acceptance-standard.md`
+- `android-device-compatibility-matrix.md`
+- `android-device-validation-plan.md`
 - `android-development-guide.md`
 
 上游总路线文档：
@@ -16,6 +18,7 @@
 验证留痕模板：
 
 - `../DocsReview/android-technical-validation-template.md`
+- `../DocsReview/android-device-compatibility-validation-template.md`
 
 使用规则：
 
@@ -29,5 +32,12 @@
 1. `../05-engineering/android-packaging-plan.md`
 2. `android-technical-architecture.md`
 3. `android-internal-interface-spec.md`
-4. `android-acceptance-standard.md`
-5. `android-development-guide.md`
+4. `android-device-compatibility-matrix.md`
+5. `android-device-validation-plan.md`
+6. `android-acceptance-standard.md`
+7. `android-development-guide.md`
+
+说明：
+
+- 兼容矩阵和设备验证计划先定义“在哪些设备等级上验证、怎么验证”。
+- 验收标准再定义“这些验证通过到什么程度才算 Android 第一阶段完成”。

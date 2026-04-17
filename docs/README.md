@@ -40,6 +40,8 @@ This folder keeps the active documentation baseline for the project.
 - `windows-packaging/windows-development-guide.md`
 - `android-packaging/android-technical-architecture.md`
 - `android-packaging/android-internal-interface-spec.md`
+- `android-packaging/android-device-compatibility-matrix.md`
+- `android-packaging/android-device-validation-plan.md`
 - `android-packaging/android-acceptance-standard.md`
 - `android-packaging/android-development-guide.md`
 
@@ -47,6 +49,7 @@ This folder keeps the active documentation baseline for the project.
 
 - `DocsReview/README.md`
 - `DocsReview/android-technical-validation-template.md`
+- `DocsReview/android-device-compatibility-validation-template.md`
 
 ## Recommended reading order
 

@@ -64,6 +64,25 @@
 - 已有明确的安装、运行与已知限制说明
 - 没有因为 Android 接入破坏 Web 与 Windows 当前基线
 
+### 3.4 第一阶段完成的设备覆盖边界
+
+这里的“Android 第一阶段完成”默认指：
+
+- 已在 `android-device-compatibility-matrix.md` 定义的 P0 设备等级上完成关键验证
+- 也就是主流安卓手机与主流安卓平板的核心主链路成立
+
+这里不默认等于：
+
+- 已广泛覆盖所有安卓机型
+- 已覆盖所有 ROM
+- 已覆盖所有设备形态
+
+因此：
+
+- P0 设备通过，是第一阶段完成判定的硬条件
+- P1 设备主要用于风险发现与记录
+- P2 设备主要用于观察，不作为第一阶段完成门槛
+
 ## 4. 环境与前置验证
 
 必须明确：
@@ -365,8 +384,14 @@ Android 专项命令：
 - 本轮使用的 Android 运行命令
 - 本轮使用的 Android 构建命令
 - 测试设备或模拟器环境
+- 本轮对应的设备等级（P0 / P1 / P2）
 - 通过了哪些场景
 - 哪些能力本轮明确未纳入
+
+建议优先配合以下模板留痕：
+
+- `docs/DocsReview/android-technical-validation-template.md`
+- `docs/DocsReview/android-device-compatibility-validation-template.md`
 
 ## 17. 手动验收场景
 
@@ -439,3 +464,11 @@ Android 第一阶段验收重点不是“能不能把应用装到手机上”，
 配套开发执行方式见：
 
 - `docs/android-packaging/android-development-guide.md`
+
+配套设备覆盖边界见：
+
+- `docs/android-packaging/android-device-compatibility-matrix.md`
+
+配套设备验证执行方式见：
+
+- `docs/android-packaging/android-device-validation-plan.md`

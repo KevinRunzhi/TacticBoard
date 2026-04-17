@@ -381,6 +381,8 @@ Android 不建议直接开工写实现，建议按下面顺序推进。
 - `docs/android-packaging/android-technical-architecture.md`
 - `docs/android-packaging/android-internal-interface-spec.md`
 - `docs/android-packaging/android-acceptance-standard.md`
+- `docs/android-packaging/android-device-compatibility-matrix.md`
+- `docs/android-packaging/android-device-validation-plan.md`
 - `docs/android-packaging/android-development-guide.md`
 
 后续建议继续补齐：
@@ -397,8 +399,10 @@ Android 不建议直接开工写实现，建议按下面顺序推进。
 1. `docs/05-engineering/android-packaging-plan.md`
 2. `docs/android-packaging/android-technical-architecture.md`
 3. `docs/android-packaging/android-internal-interface-spec.md`
-4. `docs/android-packaging/android-acceptance-standard.md`
-5. `docs/android-packaging/android-development-guide.md`
+4. `docs/android-packaging/android-device-compatibility-matrix.md`
+5. `docs/android-packaging/android-device-validation-plan.md`
+6. `docs/android-packaging/android-acceptance-standard.md`
+7. `docs/android-packaging/android-development-guide.md`
 
 ## 14. 当前结论
 

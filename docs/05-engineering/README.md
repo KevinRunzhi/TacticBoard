@@ -20,10 +20,12 @@
 - `../windows-packaging/windows-development-guide.md`
 - `../android-packaging/android-technical-architecture.md`
 - `../android-packaging/android-internal-interface-spec.md`
+- `../android-packaging/android-device-validation-plan.md`
 
 专项验证留痕模板：
 
 - `../DocsReview/android-technical-validation-template.md`
+- `../DocsReview/android-device-compatibility-validation-template.md`
 
 使用规则：
 
