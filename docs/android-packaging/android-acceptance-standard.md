@@ -472,3 +472,7 @@ Android 第一阶段验收重点不是“能不能把应用装到手机上”，
 配套设备验证执行方式见：
 
 - `docs/android-packaging/android-device-validation-plan.md`
+
+配套切片级实施顺序见：
+
+- `docs/android-packaging/android-phase1-slice-plan.md`

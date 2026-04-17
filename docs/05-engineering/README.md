@@ -21,6 +21,7 @@
 - `../android-packaging/android-technical-architecture.md`
 - `../android-packaging/android-internal-interface-spec.md`
 - `../android-packaging/android-device-validation-plan.md`
+- `../android-packaging/android-phase1-slice-plan.md`
 
 专项验证留痕模板：
 

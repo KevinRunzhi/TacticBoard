@@ -9,6 +9,7 @@
 - `android-acceptance-standard.md`
 - `android-device-compatibility-matrix.md`
 - `android-device-validation-plan.md`
+- `android-phase1-slice-plan.md`
 - `android-development-guide.md`
 
 上游总路线文档：
@@ -36,6 +37,7 @@
 5. `android-device-validation-plan.md`
 6. `android-acceptance-standard.md`
 7. `android-development-guide.md`
+8. `android-phase1-slice-plan.md`
 
 说明：
 

@@ -123,6 +123,7 @@ Android 不建议一步到位追求“完整首发”。建议拆成三个阶段
 
 阶段完成标准：
 
+- Android 触控下的最小主链路已可进入并完成基本编辑闭环
 - 本地保存链路可用
 - PNG 导出链路可用
 - 系统分享链路可用
@@ -132,13 +133,13 @@ Android 不建议一步到位追求“完整首发”。建议拆成三个阶段
 
 目标：
 
-- 明确 Android 首版到底交付哪些能力，哪些延后
+- 在已接通关键平台路径的前提下，确认 Android 首版交付边界、设备覆盖边界与剩余风险
 
 阶段完成标准：
 
-- 触控编辑核心路径可用
 - 横竖屏、平板、常见分辨率下不出现主链路级阻塞
 - Android 首发不做的能力被明确写入验收标准
+- P0 设备等级完成关键路径验证
 
 ### 4.1 Phase Gating 规则
 
@@ -458,6 +459,7 @@ Android 不建议直接开工写实现，建议按下面顺序推进。
 - `docs/android-packaging/android-device-compatibility-matrix.md`
 - `docs/android-packaging/android-device-validation-plan.md`
 - `docs/android-packaging/android-development-guide.md`
+- `docs/android-packaging/android-phase1-slice-plan.md`
 
 后续建议继续补齐：
 
@@ -477,6 +479,7 @@ Android 不建议直接开工写实现，建议按下面顺序推进。
 5. `docs/android-packaging/android-device-validation-plan.md`
 6. `docs/android-packaging/android-acceptance-standard.md`
 7. `docs/android-packaging/android-development-guide.md`
+8. `docs/android-packaging/android-phase1-slice-plan.md`
 
 ## 14. 当前结论
 

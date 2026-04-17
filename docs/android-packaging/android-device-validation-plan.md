@@ -220,6 +220,15 @@ P2 不通过的后果：
 - `docs/DocsReview/android-technical-validation-template.md`
 - `docs/DocsReview/android-device-compatibility-validation-template.md`
 
+如果当前轮次属于 Android Phase 1 的某个切片，建议同时标注：
+
+- 当前 Slice
+- 当前 Slice Exit Decision
+
+切片定义见：
+
+- `docs/android-packaging/android-phase1-slice-plan.md`
+
 ## 10. 阻塞判定规则
 
 ### 10.1 阻塞 Android 第一阶段完成的情况

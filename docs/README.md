@@ -44,6 +44,7 @@ This folder keeps the active documentation baseline for the project.
 - `android-packaging/android-device-validation-plan.md`
 - `android-packaging/android-acceptance-standard.md`
 - `android-packaging/android-development-guide.md`
+- `android-packaging/android-phase1-slice-plan.md`
 
 ## Validation / review workflow entry points
 

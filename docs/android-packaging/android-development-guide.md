@@ -302,10 +302,11 @@ Android 第一阶段开始真正实施前，必须尽早冻结并记录：
 
 1. 完成 Android 技术路线可行性验证
 2. 接 Router 统一入口与平台识别边界
-3. 接 PNG 导出与系统分享分流
-4. 接系统文件选择器与素材导入
-5. 补草稿恢复、生命周期与方向切换验证
-6. 跑 Android 手动验收与 Web / Windows 回归
+3. 打通 Android 触控下的最小主链路
+4. 接 PNG 导出与系统分享分流
+5. 接系统文件选择器与素材导入
+6. 补草稿恢复、生命周期与方向切换验证
+7. 跑 Android 设备验证、手动验收与 Web / Windows 回归
 
 不建议的顺序：
 
@@ -314,6 +315,20 @@ Android 第一阶段开始真正实施前，必须尽早冻结并记录：
 原因：
 
 - 一旦同时改太多，很难定位问题来自哪一层
+
+切片级执行拆解见：
+
+- `docs/android-packaging/android-phase1-slice-plan.md`
+
+这里的顺序默认与切片计划保持一致：
+
+- Slice 0：Android Shell Feasibility Baseline
+- Slice 1：Runtime Platform and Router Boundary
+- Slice 2：Touch-First Main-Flow Baseline
+- Slice 3：PNG Export and System Share Boundary
+- Slice 4：System Picker and Local-Copy Asset Import Boundary
+- Slice 5：Save / Recovery / Lifecycle / Orientation Hardening
+- Slice 6：Device-Tier Validation, Regression, and Phase-1 Closure
 
 ## 9.1 仓库与产物卫生规则
 
@@ -418,16 +433,22 @@ Android 设备验证建议固定按以下顺序推进：
 - 哪些是通过、失败、仅观察
 - 是否影响 Android 第一阶段完成结论
 
+如果当前轮次是围绕某个 Android 切片推进，还应额外写清：
+
+- 当前切片名称
+- 当前切片是否达到退出条件
+
 ## 12. 提交与合并建议
 
 Android 打包分支建议按功能拆小提交：
 
 1. `Android 技术路线验证`
 2. `Router / 平台识别适配`
-3. `PNG 导出与系统分享适配`
-4. `素材导入适配`
-5. `生命周期与方向切换验证`
-6. `Android 构建与验收`
+3. `触控主链路基线`
+4. `PNG 导出与系统分享适配`
+5. `素材导入适配`
+6. `生命周期与方向切换验证`
+7. `Android 构建、设备验证与验收收口`
 
 每一块都要：
 
