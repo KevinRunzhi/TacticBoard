@@ -4,6 +4,7 @@
 
 当前专项文档：
 
+- `android-windows-toolchain-setup.md`
 - `android-technical-architecture.md`
 - `android-internal-interface-spec.md`
 - `android-acceptance-standard.md`
@@ -31,13 +32,14 @@
 推荐阅读顺序：
 
 1. `../05-engineering/android-packaging-plan.md`
-2. `android-technical-architecture.md`
-3. `android-internal-interface-spec.md`
-4. `android-device-compatibility-matrix.md`
-5. `android-device-validation-plan.md`
-6. `android-acceptance-standard.md`
-7. `android-development-guide.md`
-8. `android-phase1-slice-plan.md`
+2. `android-windows-toolchain-setup.md`
+3. `android-technical-architecture.md`
+4. `android-internal-interface-spec.md`
+5. `android-device-compatibility-matrix.md`
+6. `android-device-validation-plan.md`
+7. `android-acceptance-standard.md`
+8. `android-development-guide.md`
+9. `android-phase1-slice-plan.md`
 
 说明：
 

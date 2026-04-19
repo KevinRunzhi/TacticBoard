@@ -452,6 +452,7 @@ Android 不建议直接开工写实现，建议按下面顺序推进。
 
 当前已经新增：
 
+- `docs/android-packaging/android-windows-toolchain-setup.md`
 - `docs/android-packaging/README.md`
 - `docs/android-packaging/android-technical-architecture.md`
 - `docs/android-packaging/android-internal-interface-spec.md`
@@ -473,13 +474,14 @@ Android 不建议直接开工写实现，建议按下面顺序推进。
 推荐阅读顺序：
 
 1. `docs/05-engineering/android-packaging-plan.md`
-2. `docs/android-packaging/android-technical-architecture.md`
-3. `docs/android-packaging/android-internal-interface-spec.md`
-4. `docs/android-packaging/android-device-compatibility-matrix.md`
-5. `docs/android-packaging/android-device-validation-plan.md`
-6. `docs/android-packaging/android-acceptance-standard.md`
-7. `docs/android-packaging/android-development-guide.md`
-8. `docs/android-packaging/android-phase1-slice-plan.md`
+2. `docs/android-packaging/android-windows-toolchain-setup.md`
+3. `docs/android-packaging/android-technical-architecture.md`
+4. `docs/android-packaging/android-internal-interface-spec.md`
+5. `docs/android-packaging/android-device-compatibility-matrix.md`
+6. `docs/android-packaging/android-device-validation-plan.md`
+7. `docs/android-packaging/android-acceptance-standard.md`
+8. `docs/android-packaging/android-development-guide.md`
+9. `docs/android-packaging/android-phase1-slice-plan.md`
 
 ## 14. 当前结论
 

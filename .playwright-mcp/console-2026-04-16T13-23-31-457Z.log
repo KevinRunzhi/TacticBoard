@@ -1,0 +1,17 @@
+[    8013ms] [ERROR] Error: Not connected to alive
+    at o (https://github.githubassets.com/assets/54999-407bb1382e9d04c7.js:2:3346)
+    at https://github.githubassets.com/assets/54999-407bb1382e9d04c7.js:2:6086 @ https://github.githubassets.com/assets/54999-407bb1382e9d04c7.js:1
+[    8013ms] [ERROR] Error: Not connected to alive
+    at o (https://github.githubassets.com/assets/54999-407bb1382e9d04c7.js:2:3346)
+    at https://github.githubassets.com/assets/54999-407bb1382e9d04c7.js:2:6086 @ https://github.githubassets.com/assets/54999-407bb1382e9d04c7.js:1
+[    8013ms] [ERROR] Error: Not connected to alive
+    at o (https://github.githubassets.com/assets/54999-407bb1382e9d04c7.js:2:3346)
+    at https://github.githubassets.com/assets/54999-407bb1382e9d04c7.js:2:6086 @ https://github.githubassets.com/assets/54999-407bb1382e9d04c7.js:1
+[   10153ms] [ERROR] Failed to load resource: the server responded with a status of 503 () @ https://collector.github.com/github/collect:0
+[   13718ms] [ERROR] Failed to load resource: the server responded with a status of 503 () @ https://collector.github.com/github/collect:0
+[   64535ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ https://appleid.apple.com/auth/authorize?client_id=com.github.social-oidc&redirect_uri=https%3A%2F%2Fgithub.com%2Fsessions%2Fsocial%2Fapple%2Fcallback&nonce=8200da742d33dbf36b509f73bc0a68e3&state=6852fcbe651b7dd04cd39562daa546dc&scope=email&response_mode=form_post&response_type=code:0
+[   64651ms] [ERROR] Access to font at 'https://www.apple.com/ac/globalfooter/7/zh_CN/assets/ac-footer/legacy/appleicons_text.woff' from origin 'https://appleid.apple.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ https://appleid.apple.com/auth/authorize?client_id=com.github.social-oidc&redirect_uri=https%3A%2F%2Fgithub.com%2Fsessions%2Fsocial%2Fapple%2Fcallback&nonce=8200da742d33dbf36b509f73bc0a68e3&state=6852fcbe651b7dd04cd39562daa546dc&scope=email&response_mode=form_post&response_type=code:0
+[   64651ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://www.apple.com/ac/globalfooter/7/zh_CN/assets/ac-footer/legacy/appleicons_text.woff:0
+[   64687ms] [ERROR] Access to font at 'https://www.apple.com/ac/globalfooter/7/zh_CN/assets/ac-footer/legacy/appleicons_text.ttf' from origin 'https://appleid.apple.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ https://appleid.apple.com/auth/authorize?client_id=com.github.social-oidc&redirect_uri=https%3A%2F%2Fgithub.com%2Fsessions%2Fsocial%2Fapple%2Fcallback&nonce=8200da742d33dbf36b509f73bc0a68e3&state=6852fcbe651b7dd04cd39562daa546dc&scope=email&response_mode=form_post&response_type=code:0
+[   64687ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://www.apple.com/ac/globalfooter/7/zh_CN/assets/ac-footer/legacy/appleicons_text.ttf:0
+[   66805ms] [ERROR] Failed to load resource: the server responded with a status of 503 () @ https://collector.github.com/github/collect:0

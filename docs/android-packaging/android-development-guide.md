@@ -296,6 +296,10 @@ Android 第一阶段开始真正实施前，必须尽早冻结并记录：
 
 如果后续技术验证发现这些边界需要调整，必须先改文档，再改结论。
 
+Windows 下的具体环境准备步骤见：
+
+- `docs/android-packaging/android-windows-toolchain-setup.md`
+
 ## 9. 开发顺序
 
 建议固定按以下顺序推进：
