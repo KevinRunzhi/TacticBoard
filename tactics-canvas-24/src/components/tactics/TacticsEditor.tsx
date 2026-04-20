@@ -26,6 +26,7 @@ import { BottomStepBar } from './BottomStepBar';
 import { MobileToolbar } from './MobileToolbar';
 import { MobileStepsDrawer } from './MobileStepsDrawer';
 import { MobilePropertiesDrawer } from './MobilePropertiesDrawer';
+import { MobileFormationsDrawer } from './MobileFormationsDrawer';
 import { TabletLeftDrawer } from './TabletLeftDrawer';
 import { TabletRightDrawer } from './TabletRightDrawer';
 import { TabletToolStrip } from './TabletToolStrip';
@@ -128,6 +129,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
   const [rightDrawerOpen, setRightDrawerOpen] = useState(false);
   const [stepsDrawerOpen, setStepsDrawerOpen] = useState(false);
   const [propsDrawerOpen, setPropsDrawerOpen] = useState(false);
+  const [formationsDrawerOpen, setFormationsDrawerOpen] = useState(false);
   const [pendingFieldFormat, setPendingFieldFormat] = useState<FieldFormat | null>(null);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [exportConfig, setExportConfig] = useState<ExportConfig>(() => createDefaultExportConfig());
@@ -400,9 +402,15 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
         return;
       }
       setExportDialogOpen(false);
-      toast.success('已导出当前战术板', {
-        description: `${displayProjectName}.${exportConfig.format}`,
-      });
+      if (saveResult.status === 'shared') {
+        toast.success('已进入系统分享', {
+          description: `${displayProjectName}.${exportConfig.format}`,
+        });
+      } else {
+        toast.success('已导出当前战术板', {
+          description: `${displayProjectName}.${exportConfig.format}`,
+        });
+      }
     } catch (error) {
       toast.error('导出失败，请稍后重试');
     }
@@ -721,6 +729,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
           onPlayerPlacementTeamChange={setPlayerPlacementTeam}
           onOpenSteps={() => setStepsDrawerOpen(true)}
           onOpenProperties={() => setPropsDrawerOpen(true)}
+          onOpenFormations={() => setFormationsDrawerOpen(true)}
         />
 
         <MobileStepsDrawer
@@ -744,6 +753,12 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
           open={propsDrawerOpen}
           onClose={() => setPropsDrawerOpen(false)}
           {...rightPanelProps}
+        />
+        <MobileFormationsDrawer
+          open={formationsDrawerOpen}
+          fieldFormat={state.fieldFormat}
+          onClose={() => setFormationsDrawerOpen(false)}
+          onApplyFormation={applyFormation}
         />
       </div>
       <FieldFormatChangeDialog

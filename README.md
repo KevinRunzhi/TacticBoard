@@ -110,8 +110,12 @@ npm run dev
 npm run build
 npm run test
 npm run lint
+npm run tauri
 npm run tauri:dev
 npm run tauri:build
+npm run tauri:android:init
+npm run tauri:android:dev
+npm run tauri:android:build
 ```
 
 ## 仓库结构

@@ -16,6 +16,21 @@
 - `docs/05-engineering/android-packaging-plan.md`
 - `docs/android-packaging/android-technical-architecture.md`
 
+### 1.1 与切片执行文档的关系
+
+Android Phase 1 现在已经把 `Slice 0` 到 `Slice 6` 拆成独立执行文档。
+
+接口层面的使用方式应为：
+
+- `android-phase1-slice-plan.md` 负责切片顺序和共享规则
+- `docs/android-packaging/slices/*.md` 负责逐片说明“这一片要改哪些接口、怎么验接口、哪些接口问题不能留到下一片”
+- 本文件负责冻结接口语义，避免每个切片各写一套不同的返回值和边界解释
+
+补充说明：
+
+- 这里的“前后端接口”不是远程服务接口
+- 在本项目里，它指的是“前端共享业务层 -> TypeScript 平台桥 -> Tauri / Rust / Android 原生壳层”的内部接口
+
 ## 2. 适用范围
 
 当前只覆盖 Android 打包第一阶段必须冻结的内部接口：
@@ -44,6 +59,21 @@
 - Android 第一阶段优先复用现有业务逻辑，只替换平台边界
 - 用户取消不应被当成错误
 - Android 第一阶段继续优先兼容当前 `File` 契约，而不是同时重构所有组件输入模型
+
+### 3.1 接口冻结口径与证据等级
+
+本文件里的“冻结接口”默认指：
+
+- 接口语义已经写回源文档，而不是只停留在 `DocsReview`
+- 对应实现范围已经进入可追踪提交，或者被明确标记为“仅本地实验”
+- 取消、失败、保存、分享等结果语义在 Web / Windows / Android 之间已区分清楚
+
+额外规则：
+
+- `DocsReview/*` 只能记录接口验证证据，不反向覆盖本文件
+- 未提交本地实验不能直接写成“接口已冻结”
+- 只改 `src-tauri/gen/**`、`src-tauri/target/**` 或 `src-tauri/vendor/**` 的临时补丁，不能单独视为接口实现完成
+- 系统分享、系统文件选择器、本地复制、生命周期这类系统集成接口，只有自动化或烟雾证据，不得写成“接口已验收通过”
 
 ## 4. 模块划分
 
@@ -118,6 +148,21 @@ Browser capabilities / Windows capabilities / Android capabilities
 - `src/hooks/useEditorState.ts` 第一阶段不应感知 Android 壳层细节
 - Android 相关分支只允许收口在平台抽象层
 
+### 5.1 Slice 2 组件契约补充
+
+当前第一阶段在触控主链路上额外冻结两条组件层契约：
+
+1. `RightPanelProps` 是 `RightPanel`、`MobilePropertiesDrawer`、`TabletRightDrawer` 的唯一源契约。
+   - 包装抽屉组件必须基于 `Omit<RightPanelProps, 'embedded'>` 扩展，而不是各自维护一份局部 props。
+   - `selectedPlayer`、`selectedLine`、`selectedText`、`selectedArea` 以及对应写回回调必须完整透传。
+   - 如果后续新增右侧属性面板字段，优先先改 `RightPanelProps`，再同步各个包装层；不允许先在包装层私自分叉。
+
+2. `MobileTopBar` 的返回工作台、保存项目、导出项目属于 Android 触控关键入口。
+   - 这三个入口不能只依赖 `onClick`。
+   - 必须显式处理 touch 或 pointer(`touch`) 命中。
+   - 必须具备去重策略，避免 touch 后追发 click 形成双触发。
+   - 相关实现只能停留在共享组件层，不应把 Android 特判散落到页面或业务状态层。
+
 ## 6. 运行方式约束
 
 ### 6.1 Web 运行方式
@@ -145,16 +190,20 @@ Browser capabilities / Windows capabilities / Android capabilities
 当前 `src/lib/platform.ts` 已经存在：
 
 ```ts
-export type RuntimePlatform = 'web' | 'windows-tauri';
+export type RuntimePlatform = 'web' | 'windows-tauri' | 'android-tauri';
 
 export function getRuntimePlatform(): RuntimePlatform;
 
-export function createAppRouter(children: ReactNode): ReactNode;
+export function isWindowsTauri(): boolean;
+
+export function isAndroidTauri(): boolean;
+
+export function createAppRouter(children: React.ReactNode): React.ReactNode;
 ```
 
-### 7.2 Android 第一阶段目标接口
+### 7.2 当前冻结接口（Slice 1 已提交）
 
-建议扩展为：
+当前第一阶段已经冻结为：
 
 ```ts
 export type RuntimePlatform = 'web' | 'windows-tauri' | 'android-tauri';
@@ -174,11 +223,24 @@ export function createAppRouter(children: React.ReactNode): React.ReactNode;
 - 路由容器选择集中在单一入口
 - Android 端不允许在页面组件里散落路由特判
 - Android 端沿用当前工作台 / 项目页 / 编辑器页 / 设置页的页面体系
+- Android 应用内无效 hash 路径必须留在受控 Router 树内，而不是直接把页面打到浏览器或壳层默认错误态
 
-### 7.4 当前冻结结论
+### 7.4 外部 URL / VIEW intent 边界
 
-- Android 第一阶段先冻结“平台识别 + Router 入口集中”这一层边界
-- 具体 Android Router 运行细节只有在技术验证通过后才进入实现层
+- Slice 1 当前只冻结“应用内运行时识别 + 应用内 Router 入口集中”
+- Android 外部 URL 唤起、deep link、app link、`android.intent.action.VIEW` 不属于本片默认接口合同
+- 如果后续要支持外部 URL 入口，必须单独补：
+  - 平台插件或原生能力接入
+  - 配置与权限
+  - 设备侧验收规则
+  - 与应用内 `HashRouter` 不同的错误语义与回退策略
+
+### 7.5 当前冻结结论
+
+- Slice 1 已经把 `android-tauri` 写入已提交源码，而不是继续把 Android 假扮成 Windows
+- 当前实现已经固定：Web 使用 `BrowserRouter`，Tauri 运行时统一使用 `HashRouter`
+- 应用内无效 hash 路径已经在真实 Android 壳内观察到会进入受控 `NotFound` 页面，并可返回工作台
+- 外部 `VIEW intent + URL data` 入口仍未纳入当前冻结合同，不应和应用内 Router fallback 混为一谈
 
 ## 8. 平台识别接口规范
 
@@ -273,7 +335,11 @@ type ExportBinary = {
   bytes: Uint8Array;
 };
 
-export async function saveExportBinary(binary: ExportBinary): Promise<SaveFileResult>;
+export type ExportSaveResult =
+  | SaveFileResult
+  | { status: 'shared'; path?: string };
+
+export async function saveExportBinary(binary: ExportBinary): Promise<ExportSaveResult>;
 ```
 
 ### 10.3 Android 第一阶段目标接口
@@ -289,7 +355,7 @@ export type ExportBinary = {
 
 export type SaveExportResult =
   | { status: 'saved'; path?: string }
-  | { status: 'shared' }
+  | { status: 'shared'; path?: string }
   | { status: 'cancelled' }
   | { status: 'failed'; reason: string };
 
@@ -302,11 +368,19 @@ export async function saveExportBinary(binary: ExportBinary): Promise<SaveExport
 - `export-save` 只接“生成后的二进制结果”
 - Android 第一阶段优先保证 PNG 导出 + 系统分享闭环
 - Android 第一阶段不把 GIF 导出写成默认交付要求
+- 如果要宣称 `shared` 语义已稳定，至少要有一项设备侧硬证据命中真实分享链路
+- Android PNG 分享链路应拆成两段：
+  - `prepare_share_export_binary`：把导出字节写入应用缓存目录
+  - `share_export_file`：拉起系统分享面板
+- `share_export_file` 必须由 Rust / 原生桥触发，不能由组件层或前端直接 `invoke('plugin:share|...')`
+- Android 当前阶段的 `shared` 语义定义为“系统分享面板已拉起”
+- Android 当前阶段不等待系统分享面板的下游回调；否则前端会卡在 pending，无法形成受控 UI 回写
 
 ### 10.5 禁止事项
 
 - 不允许组件层直接触发系统分享
 - 不允许 UI 组件自己判断导出结果是“保存”还是“分享”
+- 不允许把系统分享面板已经弹出但 promise 仍挂住，误当成“分享链路已完成”
 
 ## 11. 图片选择接口规范
 
@@ -349,6 +423,7 @@ export async function pickImageFile(): Promise<PickImageFileResult>;
 - Android 端素材必须复制到应用本地存储
 - 不长期依赖外部文件路径或临时授权引用
 - 读取失败要明确返回失败状态
+- 如果要宣称选择器 / 本地复制接口已稳定，至少要有一项设备侧硬证据证明选择器与本地复制主路径真实命中
 
 ### 12.3 当前组件契约兼容要求
 
@@ -433,6 +508,8 @@ Android 第一阶段必须统一以下失败场景：
 - 每一步都应单独提交
 - 每一步都应可单独回退
 - 不把多个 Android 平台适配步骤揉成一个大提交
+- 每一步 `DocsReview` 都要写清楚已提交范围与仅本地实验范围
+- 如果某一步依赖生成目录或 vendor 临时补丁，只能写成“方向可行”，不能直接关闭接口项
 
 ## 17. 接口完成标准
 
@@ -445,6 +522,8 @@ Android 第一阶段必须统一以下失败场景：
 - 参考底图导入统一走平台选择接口
 - 当前 `File` 组件契约仍保持兼容
 - 所有取消 / 失败分支语义清楚
+- 系统分享与系统文件选择器相关接口已经具备设备侧硬证据
+- 结论不依赖未提交本地实验或 `src-tauri/gen/**` / `vendor/**` 临时补丁
 
 ## 18. 当前结论
 

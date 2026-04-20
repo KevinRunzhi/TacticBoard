@@ -81,6 +81,22 @@ describe("file access", () => {
     expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:test");
   });
 
+  it("keeps android-tauri on the non-native download path until slice 3 replaces the result semantics", async () => {
+    getRuntimePlatformMock.mockReturnValue("android-tauri");
+
+    const result = await saveFile({
+      suggestedName: "demo.png",
+      mimeType: "image/png",
+      bytes: new Uint8Array([9, 8, 7]),
+    });
+
+    expect(result).toEqual({ status: "saved" });
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+    expect(saveDialogMock).not.toHaveBeenCalled();
+    expect(writeFileMock).not.toHaveBeenCalled();
+  });
+
   it("returns cancelled when the tauri save dialog is closed", async () => {
     getRuntimePlatformMock.mockReturnValue("windows-tauri");
     saveDialogMock.mockResolvedValueOnce(null);

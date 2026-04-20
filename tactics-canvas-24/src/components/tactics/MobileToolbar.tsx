@@ -3,6 +3,7 @@ import {
   Circle,
   ListOrdered,
   Settings2,
+  Shirt,
   Square,
   Target,
   TrendingUp,
@@ -19,6 +20,7 @@ interface MobileToolbarProps {
   onPlayerPlacementTeamChange: (team: Team) => void;
   onOpenSteps: () => void;
   onOpenProperties: () => void;
+  onOpenFormations: () => void;
 }
 
 type ToolCategory = 'player' | 'line' | 'text' | 'zone' | null;
@@ -39,6 +41,7 @@ export function MobileToolbar({
   onPlayerPlacementTeamChange,
   onOpenSteps,
   onOpenProperties,
+  onOpenFormations,
 }: MobileToolbarProps) {
   const [expandedCategory, setExpandedCategory] = useState<ToolCategory>(null);
 
@@ -48,9 +51,10 @@ export function MobileToolbar({
 
   const isLineTool = currentTool.startsWith('line-');
 
-  const entries: { key: ToolCategory | 'steps' | 'props' | 'select'; icon: ReactNode; label: string; active?: boolean }[] = [
+  const entries: { key: ToolCategory | 'steps' | 'props' | 'select' | 'formations'; icon: ReactNode; label: string; active?: boolean }[] = [
     { key: 'select', icon: <Target className="h-4 w-4" />, label: '选择', active: currentTool === 'select' },
     { key: 'player', icon: <Users className="h-4 w-4" />, label: '对象', active: currentTool === 'player' || currentTool === 'ball' },
+    { key: 'formations', icon: <Shirt className="h-4 w-4" />, label: '阵型' },
     { key: 'line', icon: <TrendingUp className="h-4 w-4" />, label: '线路', active: isLineTool },
     { key: 'zone', icon: <Square className="h-4 w-4" />, label: '区域', active: currentTool === 'zone' },
     { key: 'text', icon: <Type className="h-4 w-4" />, label: '文本', active: currentTool === 'text' },
@@ -61,7 +65,7 @@ export function MobileToolbar({
   return (
     <>
       {expandedCategory && (
-        <div className="absolute bottom-[52px] left-0 right-0 z-40">
+        <div className="absolute bottom-[60px] left-0 right-0 z-40">
           <div className="absolute inset-0 -top-[100vh]" onClick={() => setExpandedCategory(null)} />
           <div className="relative max-h-[40vh] overflow-y-auto rounded-t-xl border-t border-border p-3 shadow-2xl panel-bg">
             {expandedCategory === 'player' && (
@@ -182,7 +186,7 @@ export function MobileToolbar({
         </div>
       )}
 
-      <div className="relative z-50 flex h-[52px] shrink-0 items-center justify-around border-t border-border px-1 toolbar-bg">
+      <div className="relative z-50 flex h-[60px] shrink-0 items-center gap-1 overflow-x-auto border-t border-border px-1.5 toolbar-bg">
         {entries.map((entry) => (
           <button
             key={entry.key}
@@ -199,6 +203,12 @@ export function MobileToolbar({
                 return;
               }
 
+              if (entry.key === 'formations') {
+                onOpenFormations();
+                setExpandedCategory(null);
+                return;
+              }
+
               if (entry.key === 'select') {
                 onToolChange('select');
                 setExpandedCategory(null);
@@ -207,10 +217,10 @@ export function MobileToolbar({
 
               toggleCategory(entry.key as ToolCategory);
             }}
-            className={`flex flex-col items-center gap-0.5 rounded-md px-2 py-1 text-[10px] transition-colors ${
+            className={`flex min-w-[40px] flex-1 basis-0 flex-col items-center gap-1 rounded-lg px-1.5 py-1.5 text-[10px] transition-colors ${
               entry.active || expandedCategory === entry.key
                 ? 'text-primary'
-                : 'text-muted-foreground'
+                : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground'
             }`}
           >
             {entry.icon}

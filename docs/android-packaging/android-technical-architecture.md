@@ -32,6 +32,27 @@
 - Android 平台内部接口的函数级冻结规范
 - 长期云同步或账号体系
 
+### 2.1 文档定位与证据口径
+
+本文件负责回答：
+
+- Android 第一阶段应该采用什么分层、模块职责和平台边界
+- 哪些 Android 差异必须隔离到壳层与平台桥
+- 哪些结论仍只是“方向可行”，还不能写成“架构已稳定”
+
+本文件不负责替代：
+
+- `android-packaging-plan.md` 的阶段门槛
+- `android-acceptance-standard.md` 的通过 / 不通过定义
+- `android-development-guide.md` 的提交卫生和生成目录规则
+- `android-phase1-slice-plan.md` 的切片退出判断
+
+因此默认约束是：
+
+- `DocsReview/*` 只能提供证据，不反向覆盖本文件
+- 未提交本地实验不能直接写成“架构已稳定”
+- 只改 `src-tauri/gen/**`、`src-tauri/target/**` 或 `src-tauri/vendor/**` 的临时补丁，只能证明方向可行，不能单独形成正式架构结论
+
 ## 3. 当前基线与架构结论
 
 ### 3.1 当前基线
@@ -337,6 +358,7 @@ Android 正式实现开始前，至少要先拿到以下结论：
 - 文件选择器是否能接通
 - PNG 导出是否能完成系统分享闭环
 - 参考底图导入是否能完成“选择 -> 本地复制 -> 编辑器使用”闭环
+- 系统分享、系统文件选择器这类平台桥验证，至少要有一项设备侧硬证据，不能只有自动化或“按钮可点”的烟雾记录
 
 ### 13.3 交互验证门槛
 
@@ -347,6 +369,7 @@ Android 正式实现开始前，至少要先拿到以下结论：
 
 - 切后台 / 回前台是否破坏编辑状态
 - 横竖屏切换是否导致关键上下文丢失
+- 生命周期验证至少要留下真机或模拟器的明确手动记录，不得只靠推断性结论
 
 没有通过这些门槛前，不应把 Android 打包视为已进入稳定实现阶段。
 
@@ -363,8 +386,12 @@ Android 正式实现开始前，至少要先拿到以下结论：
 当前 Android 技术架构应与以下文档一起阅读：
 
 - `docs/05-engineering/android-packaging-plan.md`
+- `docs/android-packaging/android-development-guide.md`
+- `docs/android-packaging/android-phase1-slice-plan.md`
 - `docs/android-packaging/android-internal-interface-spec.md`
 - `docs/android-packaging/android-acceptance-standard.md`
+- `docs/android-packaging/android-device-compatibility-matrix.md`
+- `docs/android-packaging/android-device-validation-plan.md`
 - `docs/football-tactics-board-prd.md`
 - `docs/football-tactics-board-requirements.md`
 - `docs/football-tactics-board-information-architecture.md`
@@ -383,4 +410,6 @@ Android 正式实现开始前，至少要先拿到以下结论：
 
   这几类平台差异隔离到壳层与平台桥里。
 
-只要这个分层守住，Android 后续实现才不会把当前 Windows / Web 基线一起拖进分叉。 
+只要这个分层守住，Android 后续实现才不会把当前 Windows / Web 基线一起拖进分叉。
+
+如果某轮结论仍依赖未提交实验、`src-tauri/gen/**` 补丁或 `vendor/**` 临时副本，本文件最多只能写成“当前架构方向成立”，不能写成“架构收口完成”。

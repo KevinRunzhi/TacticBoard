@@ -14,8 +14,12 @@ npm run dev
 npm run build
 npm run test
 npm run lint
+npm run tauri
 npm run tauri:dev
 npm run tauri:build
+npm run tauri:android:init
+npm run tauri:android:dev
+npm run tauri:android:build
 ```
 
 ## 主要目录
@@ -31,6 +35,21 @@ npm run tauri:build
 - `src-tauri/target/release/bundle/nsis/`
 
 验收时建议优先记录产物输出目录，而不是把某一个固定安装包文件名写成唯一证据。
+
+## Android baseline 命令
+
+Slice 0 重新启动后，当前仓库固定的 Android baseline 入口为：
+
+```bash
+npm run tauri:android:init
+npm run tauri:android:dev
+npm run tauri:android:build
+```
+
+说明：
+
+- `tauri:android:build` 当前默认包装 `tauri android build --apk`
+- 如需补充目标参数，可使用 `npm run tauri:android:build -- --target x86_64`
 
 ## 当前范围说明
 

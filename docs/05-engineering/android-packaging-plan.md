@@ -96,6 +96,45 @@ Android 端建议优先采用：
 
 - `先验证技术路线是否成立，再进入壳层接入与交互适配。`
 
+### 3.1 文档优先级与状态术语
+
+Android 相关文档在执行时按以下顺序约束：
+
+1. `docs/05-engineering/android-packaging-plan.md`
+2. `docs/android-packaging/android-acceptance-standard.md`
+3. `docs/android-packaging/android-development-guide.md`
+4. `docs/android-packaging/android-phase1-slice-plan.md`
+5. `docs/android-packaging/slices/*.md`
+6. `docs/DocsReview/*`
+
+含义：
+
+- `android-packaging-plan.md` 负责总路线、阶段门槛和可改 / 不可改的大边界
+- `android-acceptance-standard.md` 负责“什么算通过，什么不算通过”
+- `android-development-guide.md` 负责实施规则、验证顺序、提交卫生和留痕要求
+- `android-phase1-slice-plan.md` 负责切片顺序、共享规则和切片退出条件
+- `docs/android-packaging/slices/*.md` 负责把每个切片展开成可执行的开发闭环、接口检查和验收清单
+- `DocsReview` 只负责记录证据、发现和当轮结论，不得反向覆盖前五类源文档
+
+为了避免在 Android 记录中混用“已做过”“已完成”“已关闭”这类模糊说法，默认采用以下术语：
+
+- `可行性已验证`：说明技术路线、命令或壳层 baseline 已证明可以继续
+- `切片已实现`：说明代码和配置已经落地，但不等于切片退出条件已满足
+- `切片已验收`：说明该切片的退出条件和证据要求都已满足
+- `阶段已关闭`：说明更高一级的阶段门槛、设备门槛和回归门槛都已满足
+
+不允许把：
+
+- “本地试过能跑”
+- “某个未提交实验分支上能跑”
+- “生成目录里临时补丁后能跑”
+
+直接写成：
+
+- “切片完成”
+- “阶段完成”
+- “Android 第一阶段已关闭”
+
 ## 4. Android 打包目标分层
 
 Android 不建议一步到位追求“完整首发”。建议拆成三个阶段目标。
@@ -153,6 +192,7 @@ Android 三个阶段不是建议顺序，而是默认的关闭门槛顺序。
 - Android 初始化、运行、基础页面进入已完成验证
 - 当前技术路线没有被判定为不可继续
 - 本轮验证结论已经写入 `docs/DocsReview/`
+- 支撑该结论的代码 / 配置变更已经进入当前分支的可追踪提交，或者被明确标记为“仅本地实验，不构成阶段推进依据”
 
 #### Phase B -> Phase C
 
@@ -162,6 +202,7 @@ Android 三个阶段不是建议顺序，而是默认的关闭门槛顺序。
 - PNG 导出 / 系统分享 / 系统文件选择器 / 素材导入主路径已有验证记录
 - Android 第一阶段验收边界已冻结到 `android-acceptance-standard.md`
 - 设备兼容矩阵与设备验证计划已存在且可执行
+- 当前阶段结论不是仅建立在 `src-tauri/gen/`、`vendor/` 或其它生成 / 补丁目录的临时修改上
 
 #### Phase C -> 宣称 Android 第一阶段完成
 
@@ -171,6 +212,7 @@ Android 三个阶段不是建议顺序，而是默认的关闭门槛顺序。
 - `android-device-compatibility-matrix.md` 中的 P0 设备等级要求已通过
 - 至少完成一轮 P1 风险观察
 - 已知限制已写入验证记录或审查记录
+- 系统分享、系统文件选择器、生命周期这类 Android 系统集成项，已经具备设备侧硬证据，而不是只有自动化或推断性证据
 
 #### 范围收窄规则
 
@@ -461,6 +503,14 @@ Android 不建议直接开工写实现，建议按下面顺序推进。
 - `docs/android-packaging/android-device-validation-plan.md`
 - `docs/android-packaging/android-development-guide.md`
 - `docs/android-packaging/android-phase1-slice-plan.md`
+- `docs/android-packaging/slices/README.md`
+- `docs/android-packaging/slices/slice-0-android-shell-feasibility-baseline.md`
+- `docs/android-packaging/slices/slice-1-runtime-platform-and-router-boundary.md`
+- `docs/android-packaging/slices/slice-2-touch-first-main-flow-baseline.md`
+- `docs/android-packaging/slices/slice-3-png-export-and-system-share-boundary.md`
+- `docs/android-packaging/slices/slice-4-system-picker-and-local-copy-asset-import-boundary.md`
+- `docs/android-packaging/slices/slice-5-save-recovery-lifecycle-orientation-hardening.md`
+- `docs/android-packaging/slices/slice-6-device-tier-validation-regression-phase1-closure.md`
 
 后续建议继续补齐：
 
@@ -470,6 +520,7 @@ Android 不建议直接开工写实现，建议按下面顺序推进。
 
 - `05-engineering/android-packaging-plan.md` 负责总路线
 - `android-packaging/` 负责 Android 专项设计、接口、验收和开发指导
+- `DocsReview/` 只负责证据和审查记录，不负责冻结 Android 范围本身
 
 推荐阅读顺序：
 
@@ -482,6 +533,7 @@ Android 不建议直接开工写实现，建议按下面顺序推进。
 7. `docs/android-packaging/android-acceptance-standard.md`
 8. `docs/android-packaging/android-development-guide.md`
 9. `docs/android-packaging/android-phase1-slice-plan.md`
+10. `docs/android-packaging/slices/README.md`
 
 ## 14. 当前结论
 

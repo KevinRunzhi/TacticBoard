@@ -19,7 +19,7 @@ import { toast } from '@/components/ui/sonner';
 import { canUseNativeImageImport, pickImageFile } from '@/lib/asset-import';
 import { AreaObject, MatchMeta, Player, PlayerStyle, ReferenceImage, TacticsLine, TextNote } from '@/types/tactics';
 
-interface RightPanelProps {
+export interface RightPanelProps {
   projectName: string;
   selectedPlayer: Player | null;
   selectedLine: TacticsLine | null;

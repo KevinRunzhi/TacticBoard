@@ -34,6 +34,19 @@ describe("asset import", () => {
     });
   });
 
+  it("keeps native import unavailable on android-tauri until slice 4 lands the system picker bridge", async () => {
+    getRuntimePlatformMock.mockReturnValue("android-tauri");
+    const { canUseNativeImageImport, pickImageFile } = await import("@/lib/asset-import");
+
+    expect(canUseNativeImageImport()).toBe(false);
+    await expect(pickImageFile()).resolves.toEqual({
+      status: "failed",
+      reason: "Native image import is only available in the Windows desktop runtime.",
+    });
+    expect(openMock).not.toHaveBeenCalled();
+    expect(readFileMock).not.toHaveBeenCalled();
+  });
+
   it("returns cancelled when the native dialog is closed", async () => {
     getRuntimePlatformMock.mockReturnValue("windows-tauri");
     openMock.mockResolvedValueOnce(null);
