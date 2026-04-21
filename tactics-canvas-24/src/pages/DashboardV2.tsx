@@ -8,6 +8,7 @@ import {
   type MockProject,
 } from '@/data/mockProjects';
 import { getFormationsByFormat } from '@/data/mockData';
+import { buildNewEditorLocation } from '@/lib/editor-entry';
 import { normalizeProjectNameValue } from '@/lib/project-name';
 import type { FieldFormat } from '@/types/tactics';
 
@@ -216,7 +217,7 @@ export default function DashboardV2() {
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <button
-            onClick={() => navigate('/editor?mode=new')}
+            onClick={() => navigate(buildNewEditorLocation())}
             className="rounded-2xl border border-primary/20 bg-primary/[0.08] p-4 text-left transition-colors hover:bg-primary/[0.12]"
           >
             <div className="flex items-center justify-between">
@@ -294,7 +295,7 @@ export default function DashboardV2() {
                   {formations.map((formation) => (
                     <button
                       key={formation.id}
-                      onClick={() => navigate(`/editor?mode=new&presetId=${formation.id}`)}
+                      onClick={() => navigate(buildNewEditorLocation({ presetId: formation.id }))}
                       className="h-7 w-full rounded-md px-2.5 text-left text-[11px] text-muted-foreground/60 transition-colors hover:bg-secondary/60 hover:text-foreground/80"
                     >
                       {formation.name}

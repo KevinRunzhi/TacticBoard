@@ -40,6 +40,7 @@ import {
   renameProject,
   type MockProject,
 } from '@/data/mockProjects';
+import { buildNewEditorLocation } from '@/lib/editor-entry';
 
 type ViewMode = 'grid' | 'list';
 type SortBy = 'updated' | 'name' | 'created';
@@ -262,7 +263,7 @@ export default function ProjectsV2() {
           </p>
         </div>
         <button
-          onClick={() => navigate('/editor?mode=new')}
+          onClick={() => navigate(buildNewEditorLocation())}
           className="flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-[12px] font-medium text-primary-foreground shadow-sm shadow-primary/20 transition-colors hover:bg-primary/90 sm:h-9 sm:gap-2 sm:px-5 sm:text-[13px]"
         >
           <Plus className="size-3.5" />
@@ -373,9 +374,9 @@ export default function ProjectsV2() {
       ) : null}
 
       {!hasAnyProject ? (
-        <EmptyState type="empty" onAction={() => navigate('/editor?mode=new')} />
+        <EmptyState type="empty" onAction={() => navigate(buildNewEditorLocation())} />
       ) : savedProjects.length === 0 ? (
-        <EmptyState type="empty" onAction={() => navigate('/editor?mode=new')} />
+        <EmptyState type="empty" onAction={() => navigate(buildNewEditorLocation())} />
       ) : filtered.length === 0 ? (
         <EmptyState type="no-results" />
       ) : viewMode === 'grid' ? (

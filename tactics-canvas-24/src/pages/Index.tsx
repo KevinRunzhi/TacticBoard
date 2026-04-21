@@ -2,6 +2,8 @@ import { TacticsEditor } from '@/components/tactics/TacticsEditor';
 import { Button } from '@/components/ui/button';
 import { getMockProjectById } from '@/data/mockProjects';
 import type { EditorEntryMode } from '@/hooks/useEditorState';
+import { markNewEditorSessionActive, NEW_EDITOR_SESSION_PARAM, resolveEditorEntryMode } from '@/lib/editor-entry';
+import { useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
@@ -11,12 +13,21 @@ const Index = () => {
   const project = projectId ? getMockProjectById(projectId) : null;
   const presetId = searchParams.get('presetId');
   const rawMode = searchParams.get('mode');
-  const hasSeedSource = Boolean(presetId);
+  const sessionToken = searchParams.get(NEW_EDITOR_SESSION_PARAM);
+  const mode: EditorEntryMode = resolveEditorEntryMode({
+    projectId,
+    rawMode,
+    presetId,
+    sessionToken,
+  });
 
-  let mode: EditorEntryMode = projectId ? 'project' : 'new';
-  if (!projectId && rawMode === 'resume' && !hasSeedSource) {
-    mode = 'resume';
-  }
+  useEffect(() => {
+    if (projectId || rawMode !== 'new' || !sessionToken) {
+      return;
+    }
+
+    markNewEditorSessionActive(sessionToken);
+  }, [projectId, rawMode, sessionToken]);
 
   if (projectId && !project) {
     return (

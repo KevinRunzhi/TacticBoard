@@ -17,6 +17,7 @@ import {
 } from '@/types/tactics';
 import { buildPlayersForFormation, getFormationById, getFormationsByFormat } from '@/data/mockData';
 import {
+  clearDraftState,
   cloneEditorState,
   createBlankEditorState,
   loadProjectEditorState,
@@ -29,6 +30,25 @@ import type { Workspace } from '@/types/workspace';
 
 const PLAYBACK_INTERVAL_MS = 1200;
 const HISTORY_LIMIT = 50;
+
+function createPersistenceFingerprint(state: EditorState) {
+  return JSON.stringify({
+    projectName: state.projectName,
+    fieldFormat: state.fieldFormat,
+    fieldView: state.fieldView,
+    fieldStyle: state.fieldStyle,
+    playerStyle: state.playerStyle,
+    matchMeta: state.matchMeta,
+    referenceImage: state.referenceImage,
+    orientation: state.orientation,
+    activeFormationId: state.activeFormationId,
+    formationMode: state.formationMode,
+    playerPlacementTeam: state.playerPlacementTeam,
+    currentStepIndex: state.currentStepIndex,
+    space: state.space,
+    steps: state.steps,
+  });
+}
 
 function createAreaId() {
   return `area-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
@@ -82,26 +102,37 @@ function buildInitialSnapshot(
   seed?: EditorSeed,
 ) : InitialEditorSnapshot {
   if (projectId) {
+    const projectState = loadProjectEditorState(projectId);
     const savedState = loadSavedEditorState(projectId);
     if (savedState) {
+      if (
+        projectState &&
+        createPersistenceFingerprint(savedState) === createPersistenceFingerprint(projectState)
+      ) {
+        clearDraftState(projectId);
+      } else {
+        return {
+          state: {
+            ...savedState,
+            space: savedState.space ?? workspace,
+          },
+          entrySource: 'project-draft',
+        };
+      }
+    }
+
+    if (projectState) {
       return {
         state: {
-          ...savedState,
-          space: savedState.space ?? workspace,
+          ...projectState,
+          space: projectState.space ?? workspace,
         },
-        entrySource: 'project-draft',
+        entrySource: 'project-saved',
       };
     }
 
-    const projectState = loadProjectEditorState(projectId);
-
     return {
-      state: projectState
-        ? {
-            ...projectState,
-            space: projectState.space ?? workspace,
-          }
-        : createBlankEditorState({ space: workspace }),
+      state: createBlankEditorState({ space: workspace }),
       entrySource: 'project-saved',
     };
   }
@@ -175,6 +206,12 @@ export function useEditorState(
   const stateRef = useRef(state);
   const isDraggingPlayerRef = useRef(false);
   const hasInitializedAutosaveRef = useRef(false);
+  const skipTransientDraftFlushRef = useRef(false);
+  const lastProjectSaveFingerprintRef = useRef<string | null>(
+    initialSnapshotRef.current?.entrySource === 'project-saved'
+      ? createPersistenceFingerprint(initialSnapshotRef.current.state)
+      : null,
+  );
   const [dragAutosaveRevision, setDragAutosaveRevision] = useState(0);
 
   useEffect(() => {
@@ -184,6 +221,10 @@ export function useEditorState(
     setUndoStack([]);
     setRedoStack([]);
     hasInitializedAutosaveRef.current = false;
+    skipTransientDraftFlushRef.current = false;
+    lastProjectSaveFingerprintRef.current = nextSnapshot.entrySource === 'project-saved'
+      ? createPersistenceFingerprint(nextSnapshot.state)
+      : null;
   }, [mode, normalizedSeed, projectId, workspace]);
 
   useEffect(() => {
@@ -198,6 +239,13 @@ export function useEditorState(
 
     if (isDraggingPlayerRef.current) {
       return;
+    }
+
+    if (projectId) {
+      const currentFingerprint = createPersistenceFingerprint(stateRef.current);
+      if (lastProjectSaveFingerprintRef.current === currentFingerprint) {
+        return;
+      }
     }
 
     const timer = window.setTimeout(() => {
@@ -225,6 +273,7 @@ export function useEditorState(
   const commitState = useCallback((updater: (currentState: EditorState) => EditorState) => {
     setState((currentState) => {
       const nextState = cloneEditorState(updater(currentState));
+      skipTransientDraftFlushRef.current = false;
 
       setUndoStack((history) => [...history, cloneEditorState(currentState)].slice(-HISTORY_LIMIT));
       setRedoStack([]);
@@ -836,6 +885,7 @@ export function useEditorState(
 
   const movePlayer = useCallback((playerId: string, x: number, y: number) => {
     setState(s => {
+      skipTransientDraftFlushRef.current = false;
       const newSteps = [...s.steps];
       const step = { ...newSteps[s.currentStepIndex] };
       step.players = step.players.map(p =>
@@ -848,6 +898,7 @@ export function useEditorState(
 
   const moveArea = useCallback((areaId: string, x: number, y: number) => {
     setState(s => {
+      skipTransientDraftFlushRef.current = false;
       const newSteps = [...s.steps];
       const step = { ...newSteps[s.currentStepIndex] };
       step.areas = (step.areas ?? []).map((area) => (
@@ -860,6 +911,7 @@ export function useEditorState(
 
   const moveText = useCallback((textId: string, x: number, y: number) => {
     setState(s => {
+      skipTransientDraftFlushRef.current = false;
       const newSteps = [...s.steps];
       const step = { ...newSteps[s.currentStepIndex] };
       step.texts = step.texts.map((text) => (
@@ -872,6 +924,7 @@ export function useEditorState(
 
   const moveBall = useCallback((x: number, y: number) => {
     setState(s => {
+      skipTransientDraftFlushRef.current = false;
       const newSteps = [...s.steps];
       const step = { ...newSteps[s.currentStepIndex] };
       step.ball = { ...step.ball, x, y };
@@ -922,11 +975,59 @@ export function useEditorState(
     saveDraftState(projectId, stateRef.current);
   }, [projectId]);
 
+  const flushDraft = useCallback(() => {
+    const currentState = stateRef.current;
+    if (!currentState) return;
+
+    if (!projectId && skipTransientDraftFlushRef.current) {
+      return;
+    }
+
+    if (projectId) {
+      const currentFingerprint = createPersistenceFingerprint(currentState);
+      if (lastProjectSaveFingerprintRef.current === currentFingerprint) {
+        return;
+      }
+    }
+
+    saveDraftState(projectId, currentState);
+  }, [projectId]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        flushDraft();
+      }
+    };
+
+    const handlePageHide = () => {
+      flushDraft();
+    };
+
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('beforeunload', handlePageHide);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('beforeunload', handlePageHide);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      flushDraft();
+    };
+  }, [flushDraft]);
+
   const saveProject = useCallback(() => {
-    return saveProjectState(projectId, {
+    const nextState = {
       ...stateRef.current,
       space: workspace,
-    });
+    };
+
+    if (!projectId) {
+      skipTransientDraftFlushRef.current = true;
+    }
+
+    lastProjectSaveFingerprintRef.current = createPersistenceFingerprint(nextState);
+    return saveProjectState(projectId, nextState);
   }, [projectId, workspace]);
 
   const applyFormation = useCallback((formationId: string) => {

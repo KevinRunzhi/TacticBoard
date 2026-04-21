@@ -14,16 +14,27 @@ Slice 5 负责把 Android 从“当前会话能用”推进到“保存、恢复
 
 时才会暴露。
 
-## 2. 当前代码现实（2026-04-19）
+## 2. 当前代码现实（2026-04-21）
 
-- `tactics-canvas-24/src/hooks/useEditorState.ts` 负责当前编辑状态与保存逻辑
-- `tactics-canvas-24/src/data/mockProjects.ts` 当前主要通过 `localStorage` 存储项目、草稿和设置
-- 当前已有测试覆盖：
+- `tactics-canvas-24/src/hooks/useEditorState.ts` 负责当前编辑状态、草稿写回与正式项目保存逻辑
+- `tactics-canvas-24/src/data/mockProjects.ts` 当前继续通过 `localStorage` 存储项目、草稿和设置
+- 当前分支已通过 `tactics-canvas-24/src/lib/editor-entry.ts` 为 `mode=new` 引入显式 `session` 标记，用于区分“真正新建会话”和“生命周期 / 方向切换后的恢复进入”
+- 当前分支已在 `useEditorState.ts` 中补上：
+  - `visibilitychange(hidden)`、`pagehide`、`beforeunload` 的草稿落盘
+  - 已保存正式项目的持久化指纹基线
+  - 等价正式项目草稿的去重与清理
+  - 新建会话在显式保存后不再回写瞬时草稿
+- 当前分支已新增或补强测试：
+  - `src/test/editor-entry.test.ts`
+  - `src/test/editor-lifecycle-recovery.test.tsx`
   - `src/test/editor-save-return.test.tsx`
   - `src/test/editor-autosave-drag.test.tsx`
   - `src/test/project-roundtrip-state.test.tsx`
   - `src/test/mock-projects-store.test.ts`
-- 当前代码树没有已提交 Android 生命周期 / 方向切换专项稳定化实现
+- 当前分支已在 `Pixel_7` 模拟器 Android dev 壳里重新拿到两类手动记录：
+  - 未保存新建会话 -> 应用后台 / 前台 -> 横屏 / 竖屏恢复
+  - 已保存正式项目 -> 返回工作台 -> 继续编辑 -> 应用后台 / 前台 -> 横屏 / 竖屏恢复
+- 当前轮结论只能写成“模拟器验证通过”，不能写成“真机完成”；平板与真机覆盖保留到 Slice 6
 
 ## 3. 与 APK 打包链路的关系
 
@@ -109,6 +120,7 @@ edit state
 - 方向切换不会把用户带到无法恢复的错误状态
 - Slice 4 的参考图导入在保存 / 恢复路径上没有立即失效
 - 自动化测试和设备验证共同支持上述结论
+- 如果当前轮只有模拟器手机竖屏 / 横屏记录，则只能写成“模拟器验证通过”，不能写成“真机完成”
 
 ### 7.3 不算完成的情况
 
@@ -131,4 +143,5 @@ edit state
 
 - Android 已不是“当前会话 demo”
 - 保存、恢复、生命周期、方向切换已达到可验证稳定线
+- 如果当前只有手机模拟器记录，没有平板或真机覆盖，则当前片仍不得被写成 Phase 1 生命周期验证完成
 - Slice 6 可以专注做设备矩阵验证和最终 Phase 1 收口

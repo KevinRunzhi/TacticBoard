@@ -116,3 +116,4 @@ Recommended usage:
 - `implementation-review-43-mobile-formation-device-validation-2026-04-20.md`
 - `implementation-review-44-android-slice3-export-share-restart-2026-04-20.md`
 - `implementation-review-45-android-slice4-asset-import-restart-2026-04-21.md`
+- `implementation-review-46-android-slice5-lifecycle-recovery-restart-2026-04-21.md`

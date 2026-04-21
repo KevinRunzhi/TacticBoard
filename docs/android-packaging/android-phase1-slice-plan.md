@@ -95,7 +95,7 @@ Android 第一阶段默认冻结以下顺序，不应随意重排：
 - Slice 2：历史上做过 touch-first baseline 验证，但当前代码树不应因旧 review 被视为已关闭；默认按未关闭处理
 - Slice 3：当前分支已重新建立 Android PNG -> 系统分享闭环，完成 `build / test / lint`、`tauri:build`、桌面 `tauri:dev` smoke、`export-save` 自动化回归，以及 `Pixel_7` 模拟器设备侧系统分享硬证据；当前可按片内门槛视为已关闭，真机 / 打包 APK 观察保留到 Slice 6
 - Slice 4：当前分支已重新建立 Android 系统选择器 + 本地复制素材导入边界，完成 `build / test / lint`、`tauri:build`、桌面 `tauri:dev` smoke、Android `tauri:android:dev`、`asset-import` / 头像 / 参考图自动化回归，以及 `Pixel_7` 模拟器设备侧系统选择器、本地复制、参考底图导入、球员头像导入与取消路径硬证据；当前可按片内门槛视为已关闭，真机 / release APK 留到 Slice 6
-- Slice 5：当前没有可复用的已提交 Android 生命周期 / 方向切换稳定化实现，默认未开始
+- Slice 5：当前分支已重建保存 / 恢复 / 生命周期 / 方向切换 baseline，并拿到 `Pixel_7` 模拟器 Android dev 壳里的未保存新建会话与已保存正式项目恢复记录；当前只能写成“模拟器验证通过”，不能写成“真机完成”，且仍未达到进入 Slice 6 的设备覆盖门槛
 - Slice 6：当前没有正式设备验证收口记录，默认未开始
 
 这里的含义不是否定旧 review 的价值，而是要求：
@@ -677,8 +677,14 @@ npm run lint
 
 ### Current restart status
 
-- 当前代码树没有可复用的已提交 Android 生命周期 / 方向切换稳定化实现
-- 默认按未开始处理
+- 当前分支已重新为 `mode=new` 建立显式 `session` 入口语义，避免生命周期 / 方向切换恢复被误判成新的空白编辑器进入
+- 当前分支已在 `useEditorState.ts` 中补上生命周期边界草稿落盘、正式项目持久化指纹基线和等价项目草稿清理
+- 当前分支已新增 `editor-entry.test.ts`、`editor-lifecycle-recovery.test.tsx`，并补强 `editor-save-return.test.tsx`
+- 当前分支已在 `Pixel_7` 模拟器 Android dev 壳里拿到：
+  - 未保存新建会话 -> 后台 / 前台 -> 横屏 / 竖屏恢复记录
+  - 已保存正式项目 -> 返回工作台 -> 继续编辑 -> 后台 / 前台 -> 横屏 / 竖屏恢复记录
+- 当前轮暴露并修复了一个真实存储隐患：已保存项目在“返回工作台 -> 继续编辑”后会被旧草稿误判成脏状态
+- 当前结论只能写成“模拟器验证通过”，不能写成“真机完成”；平板和真机覆盖仍留给 Slice 6
 
 ### Objective
 
@@ -723,6 +729,7 @@ npm run lint
   - 切后台 / 回前台
   - 横竖屏切换
 - P0 手机竖屏 / 横屏 / 平板都有至少一轮验证
+- 如果当前轮只有模拟器手机竖屏 / 横屏记录，则该轮只能作为 Slice 5 进行中证据，不能直接推进到 Slice 6
 
 ### Exit criteria
 
@@ -737,10 +744,12 @@ npm run lint
 - 只有“应用能重新打开”的烟雾记录，没有切后台 / 回前台 / 横竖屏切换手动记录
 - 只有推断“应该没问题”，没有明确设备或模拟器验证
 - 只有手机竖屏记录，没有横屏或平板观察
+- 把模拟器记录直接写成“真机完成”
 
 ### DocsReview evidence
 
 - `implementation-review-android-phase1-slice5-lifecycle-recovery-YYYY-MM-DD.md`
+- 当前轮记录：`implementation-review-46-android-slice5-lifecycle-recovery-restart-2026-04-21.md`
 - 模板：`android-technical-validation-template.md`
 - 如涉及明确设备覆盖，再补：
   - `implementation-review-android-phase1-slice5-device-coverage-YYYY-MM-DD.md`
@@ -750,6 +759,7 @@ npm run lint
 
 - 进入 Slice 6 前，至少要有 P0 手机竖屏 / 横屏 / 平板的一轮明确保存、恢复、生命周期记录
 - 如果当前生命周期稳定性仍主要靠推断或单一设备 smoke，不得进入 Slice 6
+- 如果当前只有 `Pixel_7` 模拟器手机记录，继续补平板 / 真机覆盖，不要把当前结果误写成 Slice 6 入口成立
 
 ### Suggested commit granularity
 

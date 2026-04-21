@@ -597,6 +597,11 @@ export function saveDraftState(projectId: string | undefined, state: EditorState
   writeDraftRecord(projectId, state);
 }
 
+export function clearDraftState(projectId?: string) {
+  ensureProjectStorage();
+  removeDraftRecord(projectId);
+}
+
 export function saveEditorState(projectId: string | undefined, state: EditorState) {
   saveDraftState(projectId, state);
 }
