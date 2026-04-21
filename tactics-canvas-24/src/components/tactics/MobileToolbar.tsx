@@ -1,4 +1,11 @@
-import { useState, type ReactNode } from 'react';
+import {
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+  type TouchEvent as ReactTouchEvent,
+  type MouseEvent as ReactMouseEvent,
+} from 'react';
 import {
   Circle,
   ListOrdered,
@@ -44,10 +51,53 @@ export function MobileToolbar({
   onOpenFormations,
 }: MobileToolbarProps) {
   const [expandedCategory, setExpandedCategory] = useState<ToolCategory>(null);
+  const lastActionTriggerRef = useRef<{ key: string; at: number } | null>(null);
 
   const toggleCategory = (category: ToolCategory) => {
     setExpandedCategory((previous) => (previous === category ? null : category));
   };
+
+  const triggerAction = (actionKey: string, action: () => void) => {
+    const now = Date.now();
+    const lastTrigger = lastActionTriggerRef.current;
+
+    if (lastTrigger && lastTrigger.key === actionKey && now - lastTrigger.at < 400) {
+      return;
+    }
+
+    lastActionTriggerRef.current = { key: actionKey, at: now };
+    action();
+  };
+
+  const createTapHandlers = (actionKey: string, action: () => void) => ({
+    onClick: (event: ReactMouseEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      triggerAction(actionKey, action);
+    },
+    onPointerDown: (event: ReactPointerEvent<HTMLButtonElement>) => {
+      if (event.pointerType === 'touch') {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    },
+    onPointerUp: (event: ReactPointerEvent<HTMLButtonElement>) => {
+      if (event.pointerType === 'touch') {
+        event.preventDefault();
+        event.stopPropagation();
+        triggerAction(actionKey, action);
+      }
+    },
+    onTouchStart: (event: ReactTouchEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+    },
+    onTouchEnd: (event: ReactTouchEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      triggerAction(actionKey, action);
+    },
+  });
 
   const isLineTool = currentTool.startsWith('line-');
 
@@ -80,10 +130,10 @@ export function MobileToolbar({
                     ] as const).map(([tool, label, Icon]) => (
                       <button
                         key={tool}
-                        onClick={() => {
+                        {...createTapHandlers(`player-tool-${tool}`, () => {
                           onToolChange(tool);
                           setExpandedCategory(null);
-                        }}
+                        })}
                         className={`flex flex-col items-center gap-1 rounded-lg border py-2.5 text-xs transition-colors ${
                           currentTool === tool
                             ? 'border-primary/30 bg-primary/20 text-primary'
@@ -106,7 +156,7 @@ export function MobileToolbar({
                     ] as const).map(([team, label]) => (
                       <button
                         key={team}
-                        onClick={() => onPlayerPlacementTeamChange(team)}
+                        {...createTapHandlers(`player-team-${team}`, () => onPlayerPlacementTeamChange(team))}
                         className={`rounded-lg border px-3 py-2.5 text-xs font-medium transition-colors ${
                           playerPlacementTeam === team
                             ? 'border-primary/30 bg-primary/20 text-primary'
@@ -127,10 +177,10 @@ export function MobileToolbar({
                   {lineTools.map(({ tool, label, color }) => (
                     <button
                       key={tool}
-                      onClick={() => {
+                      {...createTapHandlers(`line-tool-${tool}`, () => {
                         onToolChange(tool);
                         setExpandedCategory(null);
-                      }}
+                      })}
                       className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-xs transition-colors ${
                         currentTool === tool
                           ? 'border-primary/30 bg-primary/20 text-primary'
@@ -148,10 +198,10 @@ export function MobileToolbar({
               <div className="space-y-2">
                 <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">文本工具</h4>
                 <button
-                  onClick={() => {
+                  {...createTapHandlers('text-tool', () => {
                     onToolChange('text');
                     setExpandedCategory(null);
-                  }}
+                  })}
                   className={`flex w-full items-center gap-2 rounded-lg border px-3 py-2.5 text-xs transition-colors ${
                     currentTool === 'text'
                       ? 'border-primary/30 bg-primary/20 text-primary'
@@ -167,10 +217,10 @@ export function MobileToolbar({
               <div className="space-y-2">
                 <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">区域工具</h4>
                 <button
-                  onClick={() => {
+                  {...createTapHandlers('zone-tool', () => {
                     onToolChange('zone');
                     setExpandedCategory(null);
-                  }}
+                  })}
                   className={`flex w-full items-center gap-2 rounded-lg border px-3 py-2.5 text-xs transition-colors ${
                     currentTool === 'zone'
                       ? 'border-primary/30 bg-primary/20 text-primary'
@@ -190,7 +240,7 @@ export function MobileToolbar({
         {entries.map((entry) => (
           <button
             key={entry.key}
-            onClick={() => {
+            {...createTapHandlers(`toolbar-entry-${entry.key}`, () => {
               if (entry.key === 'steps') {
                 onOpenSteps();
                 setExpandedCategory(null);
@@ -216,7 +266,7 @@ export function MobileToolbar({
               }
 
               toggleCategory(entry.key as ToolCategory);
-            }}
+            })}
             className={`flex min-w-[40px] flex-1 basis-0 flex-col items-center gap-1 rounded-lg px-1.5 py-1.5 text-[10px] transition-colors ${
               entry.active || expandedCategory === entry.key
                 ? 'text-primary'

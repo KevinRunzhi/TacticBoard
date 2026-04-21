@@ -94,7 +94,7 @@ Android 第一阶段默认冻结以下顺序，不应随意重排：
 - Slice 1：当前分支已经重新建立 `android-tauri` 运行时识别与集中 Router 入口，并完成 `build / test / lint`、`tauri:build`、桌面 `tauri:dev` smoke、Android `tauri:android:dev` smoke、应用级无效路由自动化回归与 Android 壳内无效 hash 路径现场观察；当前可按片内最严格证据门槛视为已关闭，但仍保留一个片外风险：外部 `VIEW intent + URL data` 入口尚未纳入合同
 - Slice 2：历史上做过 touch-first baseline 验证，但当前代码树不应因旧 review 被视为已关闭；默认按未关闭处理
 - Slice 3：当前分支已重新建立 Android PNG -> 系统分享闭环，完成 `build / test / lint`、`tauri:build`、桌面 `tauri:dev` smoke、`export-save` 自动化回归，以及 `Pixel_7` 模拟器设备侧系统分享硬证据；当前可按片内门槛视为已关闭，真机 / 打包 APK 观察保留到 Slice 6
-- Slice 4：当前没有可复用的已提交 Android 素材导入实现，默认未开始
+- Slice 4：当前分支已重新建立 Android 系统选择器 + 本地复制素材导入边界，完成 `build / test / lint`、`tauri:build`、桌面 `tauri:dev` smoke、Android `tauri:android:dev`、`asset-import` / 头像 / 参考图自动化回归，以及 `Pixel_7` 模拟器设备侧系统选择器、本地复制、参考底图导入、球员头像导入与取消路径硬证据；当前可按片内门槛视为已关闭，真机 / release APK 留到 Slice 6
 - Slice 5：当前没有可复用的已提交 Android 生命周期 / 方向切换稳定化实现，默认未开始
 - Slice 6：当前没有正式设备验证收口记录，默认未开始
 
@@ -573,8 +573,23 @@ npm run lint
 
 ### Current restart status
 
-- 当前代码树没有可复用的已提交 Android 系统选择器 + 本地复制实现
-- 默认按未开始处理
+- 当前分支已重新建立 Android 系统选择器 + 本地复制素材导入边界，不再只停留在历史 review
+- 当前代码树已把 `asset-import.ts` 扩展为：
+  - Android / Windows 原生选择器统一入口
+  - 原生字节读取
+  - Rust `persist_imported_image` 本地复制
+  - 归一化 `File` 返回
+- 当前分支已同时打通两条共享业务链路：
+  - 参考底图导入
+  - 球员头像导入
+- 当前分支已补齐 `asset-import.test.ts`、`right-panel-reference-import.test.tsx`、`player-avatar-model.test.tsx`、`player-avatar-render.test.tsx` 与触控相关回归
+- 当前分支已在 `Pixel_7` 模拟器 Android dev 壳内拿到：
+  - 系统选择器打开证据
+  - 本地复制命中日志
+  - 参考底图导入成功证据
+  - 球员头像导入成功证据
+  - 取消选择不破坏现有头像状态的证据
+- 当前分支额外暴露并修复了一个跨片交互风险：`MobileToolbar` 触控去重最初会吞掉相邻按钮动作，并可能把合成点击漏给球场；当前已改成“按按钮动作去重 + touchstart/pointerdown 拦截”
 
 ### Objective
 
@@ -619,6 +634,7 @@ npm run lint
 - 参考底图导入可用
 - 完成本地复制
 - 失败不留下空引用
+- 用户取消不应破坏当前已存在的底图或头像状态
 - 浏览器导入路径仍可用
 - Windows 导入语义未被污染
 - 至少留下一项设备侧硬证据，证明选择器和本地复制主路径真实命中
@@ -629,6 +645,8 @@ npm run lint
 - 组件仍消费 `File`
 - 没有把原生路径 / URI 泄漏到 UI
 - 已具备系统选择器和本地复制的设备侧硬证据
+- 参考底图与球员头像都已至少具备一轮设备侧成功证据
+- 取消路径已至少具备一轮设备侧观察或自动化回归
 
 ### Does not count as done
 
@@ -636,10 +654,12 @@ npm run lint
 - 只有头像导入或只有底图导入单边可用
 - 组件层仍直接消费路径、URI 或权限引用
 - 只有浏览器导入路径可用，没有 Android 专项导入证据
+- 只有成功路径，没有取消 / 失败语义覆盖
+- 因为触控串触发，选择工具时会把导入或落点动作误发给底层球场
 
 ### DocsReview evidence
 
-- `implementation-review-android-phase1-slice4-asset-import-YYYY-MM-DD.md`
+- `implementation-review-45-android-slice4-asset-import-restart-2026-04-21.md`
 - 模板：`android-technical-validation-template.md`
 
 ### Handoff to next slice

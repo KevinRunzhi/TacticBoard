@@ -1,7 +1,8 @@
+import type { ComponentProps } from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RightPanel } from "@/components/tactics/RightPanel";
-import type { MatchMeta } from "@/types/tactics";
+import type { MatchMeta, Player } from "@/types/tactics";
 
 const pickImageFileMock = vi.fn();
 const canUseNativeImageImportMock = vi.fn(() => false);
@@ -18,7 +19,60 @@ const matchMeta: MatchMeta = {
   phaseLabel: "",
 };
 
-describe("right panel reference image import", () => {
+function renderRightPanel(overrides?: Partial<ComponentProps<typeof RightPanel>>) {
+  return render(
+    <RightPanel
+      projectName="项目"
+      selectedPlayer={null}
+      selectedLine={null}
+      selectedText={null}
+      selectedArea={null}
+      playerStyle="dot"
+      matchMeta={matchMeta}
+      referenceImage={null}
+      stepDescription=""
+      onProjectNameChange={() => {}}
+      onMatchMetaChange={() => {}}
+      onStepDescriptionChange={() => {}}
+      onPlayerNameChange={() => {}}
+      onPlayerNumberChange={() => {}}
+      onPlayerPositionChange={() => {}}
+      onPlayerTeamChange={() => {}}
+      onPlayerAvatarImport={() => {}}
+      onPlayerAvatarRemove={() => {}}
+      onDeletePlayer={() => {}}
+      onTextContentChange={() => {}}
+      onTextStyleChange={() => {}}
+      onTextXChange={() => {}}
+      onTextYChange={() => {}}
+      onDeleteText={() => {}}
+      onLineTypeChange={() => {}}
+      onLineFromXChange={() => {}}
+      onLineFromYChange={() => {}}
+      onLineToXChange={() => {}}
+      onLineToYChange={() => {}}
+      onDeleteLine={() => {}}
+      onAreaShapeChange={() => {}}
+      onAreaWidthChange={() => {}}
+      onAreaHeightChange={() => {}}
+      onAreaOpacityChange={() => {}}
+      onAreaStrokeColorChange={() => {}}
+      onAreaFillColorChange={() => {}}
+      onDeleteArea={() => {}}
+      onReferenceImageImport={() => {}}
+      onReferenceImageVisibilityChange={() => {}}
+      onReferenceImageOpacityChange={() => {}}
+      onReferenceImageScaleChange={() => {}}
+      onReferenceImageOffsetXChange={() => {}}
+      onReferenceImageOffsetYChange={() => {}}
+      onReferenceImageResetTransform={() => {}}
+      onReferenceImageRemove={() => {}}
+      {...overrides}
+    />,
+  );
+}
+
+describe("right panel image import", () => {
   beforeEach(() => {
     pickImageFileMock.mockReset();
     canUseNativeImageImportMock.mockReset();
@@ -29,64 +83,50 @@ describe("right panel reference image import", () => {
     cleanup();
   });
 
-  it("uses the native Windows picker when available", async () => {
+  it("uses the native picker for reference image import when available", async () => {
     const importedFiles: File[] = [];
     const file = new File([new Uint8Array([1, 2, 3])], "reference.png", { type: "image/png" });
 
     canUseNativeImageImportMock.mockReturnValue(true);
     pickImageFileMock.mockResolvedValueOnce({ status: "selected", file });
 
-    render(
-      <RightPanel
-        projectName="项目"
-        selectedPlayer={null}
-        selectedLine={null}
-        selectedText={null}
-        selectedArea={null}
-        playerStyle="dot"
-        matchMeta={matchMeta}
-        referenceImage={null}
-        stepDescription=""
-        onProjectNameChange={() => {}}
-        onMatchMetaChange={() => {}}
-        onStepDescriptionChange={() => {}}
-        onPlayerNameChange={() => {}}
-        onPlayerNumberChange={() => {}}
-        onPlayerPositionChange={() => {}}
-        onPlayerTeamChange={() => {}}
-        onDeletePlayer={() => {}}
-        onTextContentChange={() => {}}
-        onTextStyleChange={() => {}}
-        onTextXChange={() => {}}
-        onTextYChange={() => {}}
-        onDeleteText={() => {}}
-        onLineTypeChange={() => {}}
-        onLineFromXChange={() => {}}
-        onLineFromYChange={() => {}}
-        onLineToXChange={() => {}}
-        onLineToYChange={() => {}}
-        onDeleteLine={() => {}}
-        onAreaShapeChange={() => {}}
-        onAreaWidthChange={() => {}}
-        onAreaHeightChange={() => {}}
-        onAreaOpacityChange={() => {}}
-        onAreaStrokeColorChange={() => {}}
-        onAreaFillColorChange={() => {}}
-        onDeleteArea={() => {}}
-        onReferenceImageImport={(nextFile) => {
-          importedFiles.push(nextFile);
-        }}
-        onReferenceImageVisibilityChange={() => {}}
-        onReferenceImageOpacityChange={() => {}}
-        onReferenceImageScaleChange={() => {}}
-        onReferenceImageOffsetXChange={() => {}}
-        onReferenceImageOffsetYChange={() => {}}
-        onReferenceImageResetTransform={() => {}}
-        onReferenceImageRemove={() => {}}
-      />,
-    );
+    renderRightPanel({
+      onReferenceImageImport: (nextFile) => {
+        importedFiles.push(nextFile);
+      },
+    });
 
-    fireEvent.click(screen.getByRole("button", { name: /导入参考底图/i }));
+    fireEvent.touchEnd(screen.getByRole("button", { name: /导入参考底图/i }));
+
+    expect(pickImageFileMock).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(importedFiles).toHaveLength(1));
+    expect(importedFiles[0]).toBe(file);
+  });
+
+  it("uses the native picker for player avatar import when available", async () => {
+    const importedFiles: File[] = [];
+    const selectedPlayer: Player = {
+      id: "player-1",
+      name: "测试球员",
+      number: 9,
+      position: "ST",
+      team: "home",
+      x: 50,
+      y: 50,
+    };
+    const file = new File([new Uint8Array([9, 8, 7])], "avatar.jpg", { type: "image/jpeg" });
+
+    canUseNativeImageImportMock.mockReturnValue(true);
+    pickImageFileMock.mockResolvedValueOnce({ status: "selected", file });
+
+    renderRightPanel({
+      selectedPlayer,
+      onPlayerAvatarImport: (nextFile) => {
+        importedFiles.push(nextFile);
+      },
+    });
+
+    fireEvent.touchEnd(screen.getByRole("button", { name: /导入球员头像/i }));
 
     expect(pickImageFileMock).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(importedFiles).toHaveLength(1));

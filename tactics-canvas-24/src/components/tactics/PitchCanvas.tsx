@@ -826,6 +826,7 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
             const cy = toSvgY(player.y);
             const isSelected = selectedPlayerId === player.id;
             const isHome = player.team === 'home';
+            const avatarClipId = `player-avatar-clip-${player.id}`;
 
             if (playerStyle === 'card') {
               return (
@@ -835,8 +836,27 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
                     fill={isHome ? 'hsl(210, 90%, 40%)' : 'hsl(0, 70%, 45%)'}
                     stroke={isHome ? 'hsl(210, 90%, 55%)' : 'hsl(0, 70%, 60%)'} strokeWidth={1}
                   />
-                  <text x={cx} y={cy - 4} textAnchor="middle" fill="#fff" fontSize={12} fontWeight={700}>{player.number}</text>
-                  <text x={cx} y={cy + 10} textAnchor="middle" fill="hsla(0,0%,100%,0.8)" fontSize={6}>{player.name.slice(0, 2)}</text>
+                  {player.avatarLocalUri ? (
+                    <>
+                      <defs>
+                        <clipPath id={avatarClipId}>
+                          <circle cx={cx} cy={cy - 10} r={6.2} />
+                        </clipPath>
+                      </defs>
+                      <circle cx={cx} cy={cy - 10} r={6.7} fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.42)" strokeWidth={0.8} />
+                      <image
+                        href={player.avatarLocalUri}
+                        x={cx - 6.2}
+                        y={cy - 16.2}
+                        width={12.4}
+                        height={12.4}
+                        preserveAspectRatio="xMidYMid slice"
+                        clipPath={`url(#${avatarClipId})`}
+                      />
+                    </>
+                  ) : null}
+                  <text x={cx} y={player.avatarLocalUri ? cy + 2 : cy - 4} textAnchor="middle" fill="#fff" fontSize={12} fontWeight={700}>{player.number}</text>
+                  <text x={cx} y={player.avatarLocalUri ? cy + 11 : cy + 10} textAnchor="middle" fill="hsla(0,0%,100%,0.8)" fontSize={6}>{player.name.slice(0, 2)}</text>
                 </g>
               );
             }

@@ -399,6 +399,16 @@ export function canUseNativeImageImport(): boolean;
 export async function pickImageFile(): Promise<PickImageFileResult>;
 ```
 
+当前第一阶段的本地实现已经补到：
+
+- `canUseNativeImageImport()` 对 `windows-tauri` 与 `android-tauri` 同时返回 `true`
+- 原生路径下统一走：
+  - `@tauri-apps/plugin-dialog.open`
+  - `@tauri-apps/plugin-fs.readFile`
+  - Rust 命令 `persist_imported_image`
+  - 归一化后的 `File`
+- 组件层继续只接 `File`，不接 `content://` URI 或原生权限对象
+
 ### 11.2 Android 第一阶段要求
 
 - Android 图片选择必须优先走系统文件选择器
@@ -421,6 +431,7 @@ export async function pickImageFile(): Promise<PickImageFileResult>;
 - 导入前检查 MIME
 - 导入前检查体积上限
 - Android 端素材必须复制到应用本地存储
+- Android 第一阶段当前已固定通过 Rust `persist_imported_image` 完成本地复制
 - 不长期依赖外部文件路径或临时授权引用
 - 读取失败要明确返回失败状态
 - 如果要宣称选择器 / 本地复制接口已稳定，至少要有一项设备侧硬证据证明选择器与本地复制主路径真实命中
@@ -438,6 +449,7 @@ export async function pickImageFile(): Promise<PickImageFileResult>;
 1. `asset-import.ts` 继续对外提供浏览器兼容 `File`
 2. 不在 Android 第一阶段同步重构组件契约
 3. 不在同一轮里混用 `File`、路径字符串和 URI 三种输入模型
+4. 球员头像导入与参考底图导入共用这一契约，不允许为头像单独引入第二种输入模型
 
 ## 13. 组件接入规则
 
@@ -447,16 +459,24 @@ Android 第一阶段建议这样接：
   - 只处理 Router 入口，不写具体 Android 原生调用
 - `TacticsEditor.tsx`
   - 导出时调用 `saveExportBinary`
+  - 导入时负责把归一化后的 `File` 转成当前编辑模型可消费的 `data URL`
 - `RightPanel.tsx`
-  - 导入参考底图时调用 `pickImageFile` 或同模块统一封装入口
+  - 导入参考底图与球员头像时调用 `pickImageFile` 或同模块统一封装入口
 - `TabletRightDrawer.tsx` / `MobilePropertiesDrawer.tsx`
   - 保持与 `RightPanel.tsx` 一致的导入契约
+- `PitchCanvas.tsx` / `tactics-export.ts`
+  - 只消费 `referenceImage.localUri` / `player.avatarLocalUri` 这类归一化后的前端字段
+  - 不直接理解原生路径、URI 或权限语义
 
 不建议第一阶段就改：
 
 - `useEditorState.ts`
-- `types/tactics.ts`
-- 核心项目模型
+- 核心项目模型的大方向与存储分层
+
+当前允许的例外是：
+
+- 为维持共享业务链路所需的最小附加字段，可以在现有项目模型上做加法，而不是重建第二套资产模型
+- 当前 Slice 4 已使用这一例外，为 `Player` 增加 `avatarLocalUri?: string | null`
 
 ## 14. 存储与生命周期边界规范
 
@@ -464,6 +484,7 @@ Android 第一阶段建议这样接：
 
 - 项目数据继续沿用当前前端本地存储模型作为基线
 - Android 第一阶段不引入第二套项目模型
+- Android 本地复制只解决“导入边界稳定化”，不等于项目存储已经改成原生资产库
 
 ### 14.2 必须明确的边界
 
@@ -471,6 +492,7 @@ Android 第一阶段建议这样接：
 - Android 生命周期事件不应直接泄漏到组件层
 - Android 第一阶段不承诺与 Web / Windows 自动数据互通
 - 本地素材复制和项目数据写入不能混成一个平台黑箱
+- 当前 Slice 4 里，参考底图与球员头像在进入编辑器后仍会回写到前端项目状态；后续 Slice 5 负责验证这些状态在保存 / 恢复 / 生命周期下是否稳定
 
 ## 15. 失败场景规范
 

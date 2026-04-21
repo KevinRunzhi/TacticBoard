@@ -18,6 +18,7 @@ export interface Player {
   name: string;
   position: string;
   team: Team;
+  avatarLocalUri?: string | null;
   x: number; // percentage 0-100
   y: number; // percentage 0-100
 }

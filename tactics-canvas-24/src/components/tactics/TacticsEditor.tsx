@@ -62,6 +62,24 @@ const formatLabels: Record<FieldFormat, string> = {
   '5v5': '5人制',
 };
 
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== 'string') {
+        reject(new Error('Imported image did not produce a data URL.'));
+        return;
+      }
+
+      resolve(reader.result);
+    };
+    reader.onerror = () => {
+      reject(new Error('Failed to read imported image.'));
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEditorProps) {
   const { workspace } = useWorkspace();
   const location = useLocation();
@@ -416,15 +434,9 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
     }
   }, [displayProjectName, exportConfig, state.steps.length]);
 
-  const handleReferenceImageImport = useCallback((file: File) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      if (typeof result !== 'string') {
-        toast.error('参考底图导入失败，请重新选择图片');
-        return;
-      }
-
+  const handleReferenceImageImport = useCallback(async (file: File) => {
+    try {
+      const result = await readFileAsDataUrl(file);
       const nextImage: ReferenceImage = {
         id: `reference-${Date.now()}`,
         name: file.name,
@@ -441,12 +453,33 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
       toast.success('已导入参考底图', {
         description: file.name,
       });
-    };
-    reader.onerror = () => {
+    } catch {
       toast.error('参考底图导入失败，请重新选择图片');
-    };
-    reader.readAsDataURL(file);
+    }
   }, [setReferenceImage]);
+
+  const handlePlayerAvatarImport = useCallback(async (file: File) => {
+    try {
+      const result = await readFileAsDataUrl(file);
+      updateSelectedPlayer((player) => ({
+        ...player,
+        avatarLocalUri: result,
+      }));
+      toast.success('已导入球员头像', {
+        description: file.name,
+      });
+    } catch {
+      toast.error('球员头像导入失败，请重新选择图片');
+    }
+  }, [updateSelectedPlayer]);
+
+  const handlePlayerAvatarRemove = useCallback(() => {
+    updateSelectedPlayer((player) => ({
+      ...player,
+      avatarLocalUri: undefined,
+    }));
+    toast.success('已移除球员头像');
+  }, [updateSelectedPlayer]);
 
   const rightPanelProps = {
     projectName: displayProjectName,
@@ -469,6 +502,8 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
       setPlayerPlacementTeam(team);
       updateSelectedPlayer((player) => ({ ...player, team }));
     },
+    onPlayerAvatarImport: handlePlayerAvatarImport,
+    onPlayerAvatarRemove: handlePlayerAvatarRemove,
     onDeletePlayer: removeSelectedPlayer,
     onTextContentChange: (text: string) => updateSelectedText((textNote) => ({ ...textNote, text })),
     onTextStyleChange: (style: 'title' | 'body' | 'emphasis') => updateSelectedText((textNote) => ({ ...textNote, style })),

@@ -28,6 +28,8 @@ function createBaseRightPanelProps(overrides?: Partial<Omit<RightPanelProps, 'em
     onPlayerNumberChange: vi.fn(),
     onPlayerPositionChange: vi.fn(),
     onPlayerTeamChange: vi.fn(),
+    onPlayerAvatarImport: vi.fn(),
+    onPlayerAvatarRemove: vi.fn(),
     onDeletePlayer: vi.fn(),
     onTextContentChange: vi.fn(),
     onTextStyleChange: vi.fn(),
