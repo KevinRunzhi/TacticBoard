@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { normalizeProjectNameValue } from '@/lib/project-name';
+import { createEditorPersistenceFingerprint } from '@/lib/editor-persistence';
 import { createDefaultExportConfig } from '@/lib/export-config';
 import { saveExportBinary } from '@/lib/export-save';
 import { getGifConstraintMessage } from '@/lib/tactics-export';
@@ -141,6 +142,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
   const pitchCanvasRef = useRef<PitchCanvasHandle>(null);
   const lastSavedFingerprintRef = useRef<string | null>(null);
   const pendingSaveKindRef = useRef<EditorSaveKind>(null);
+  const changeFingerprintRef = useRef<string>('');
 
   const [zoomPercentage, setZoomPercentage] = useState(100);
   const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
@@ -173,29 +175,13 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
   const hasFormalProject = Boolean(projectId || activeProjectId);
   const displayProjectName = normalizeProjectNameValue(state.projectName);
   const changeFingerprint = useMemo(
-    () => JSON.stringify({
-      projectName: state.projectName,
-      fieldFormat: state.fieldFormat,
-      fieldView: state.fieldView,
-      fieldStyle: state.fieldStyle,
-      playerStyle: state.playerStyle,
-      matchMeta: state.matchMeta,
-      referenceImage: state.referenceImage,
-      currentStepIndex: state.currentStepIndex,
-      steps: state.steps,
-    }),
-    [
-      state.currentStepIndex,
-      state.fieldFormat,
-      state.fieldStyle,
-      state.fieldView,
-      state.matchMeta,
-      state.playerStyle,
-      state.projectName,
-      state.referenceImage,
-      state.steps,
-    ],
+    () => createEditorPersistenceFingerprint(state),
+    [state],
   );
+
+  useEffect(() => {
+    changeFingerprintRef.current = changeFingerprint;
+  }, [changeFingerprint]);
 
   useEffect(() => {
     if (!canIncludeReferenceImage && exportConfig.includeReferenceImage) {
@@ -220,7 +206,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
     const routeSaveKind = routeState?.editorSaveKind ?? null;
     setActiveProjectId(projectId ?? null);
     if (entrySource === 'project-saved') {
-      lastSavedFingerprintRef.current = changeFingerprint;
+      lastSavedFingerprintRef.current = changeFingerprintRef.current;
       setSaveStatus('saved');
       setLastSaveKind(routeSaveKind ?? pendingSaveKindRef.current ?? 'update');
     } else {
@@ -229,7 +215,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
       setLastSaveKind(null);
     }
     pendingSaveKindRef.current = null;
-  }, [changeFingerprint, entrySource, location.state, projectId]);
+  }, [entrySource, location.state, projectId]);
 
   useEffect(() => {
     const lastSavedFingerprint = lastSavedFingerprintRef.current;
@@ -298,8 +284,19 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
     returnToWorkspace?: boolean;
   }) => {
     setSaveStatus('saving');
+    const previousSavedFingerprint = lastSavedFingerprintRef.current;
 
-    const savedProjectId = saveProject();
+    let savedProjectId: string;
+    try {
+      savedProjectId = saveProject();
+    } catch {
+      pendingSaveKindRef.current = null;
+      lastSavedFingerprintRef.current = previousSavedFingerprint;
+      setSaveStatus(previousSavedFingerprint === changeFingerprint ? 'saved' : 'unsaved');
+      toast.error('保存失败，请稍后重试');
+      return null;
+    }
+
     const firstSave = !projectId && !activeProjectId;
     const nextSaveKind: EditorSaveKind = firstSave ? 'first' : 'update';
 
@@ -572,7 +569,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
   if (isDesktop) {
     return (
       <>
-        <div className="flex h-screen w-screen flex-col overflow-hidden">
+        <div className="app-screen flex w-full flex-col overflow-hidden">
           <TopToolbar
             projectId={projectId}
             projectName={displayProjectName}
@@ -598,7 +595,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
             onExport={openExportDialog}
             onReturnToWorkspace={handleReturnToWorkspace}
           />
-          <div className="flex flex-1 overflow-hidden">
+          <div className="flex min-h-0 flex-1 overflow-hidden">
             <LeftPanel
               currentTool={state.currentTool}
               fieldFormat={state.fieldFormat}
@@ -647,7 +644,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
   if (isTablet) {
     return (
       <>
-        <div className="flex h-screen w-screen flex-col overflow-hidden">
+        <div className="app-screen flex w-full flex-col overflow-hidden">
           <TopToolbar
             projectId={projectId}
             projectName={displayProjectName}
@@ -674,7 +671,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
             onReturnToWorkspace={handleReturnToWorkspace}
           />
 
-          <div className="relative flex-1 overflow-hidden">
+          <div className="relative flex min-h-0 flex-1 overflow-hidden">
             <TabletToolStrip
               onOpenTools={() => setLeftDrawerOpen(true)}
               onOpenFormations={() => setLeftDrawerOpen(true)}
@@ -739,7 +736,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
 
   return (
     <>
-      <div className="relative flex h-screen w-screen flex-col overflow-hidden">
+      <div className="app-screen relative flex w-full flex-col overflow-hidden">
         <MobileTopBar
           projectId={projectId}
           projectName={displayProjectName}
@@ -753,7 +750,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
           onExport={openExportDialog}
           onReturnToWorkspace={handleReturnToWorkspace}
         />
-        <div className="flex-1 overflow-hidden">
+        <div className="flex min-h-0 flex-1 overflow-hidden">
           <PitchCanvas ref={pitchCanvasRef} {...canvasProps} />
         </div>
         <MobileToolbar

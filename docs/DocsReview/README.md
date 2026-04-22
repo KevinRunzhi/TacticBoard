@@ -117,3 +117,12 @@ Recommended usage:
 - `implementation-review-44-android-slice3-export-share-restart-2026-04-20.md`
 - `implementation-review-45-android-slice4-asset-import-restart-2026-04-21.md`
 - `implementation-review-46-android-slice5-lifecycle-recovery-restart-2026-04-21.md`
+- `implementation-review-47-android-slice5-tablet-simulator-validation-2026-04-21.md`
+- `implementation-review-48-android-slice5-save-integrity-audit-2026-04-21.md`
+- `implementation-review-49-android-mobile-viewport-pitch-hardening-2026-04-22.md`
+- `implementation-review-50-android-mobile-editor-ux-followup-2026-04-22.md`
+- `implementation-review-51-android-mobile-editor-ux-realdevice-validation-2026-04-22.md`
+- `implementation-review-52-android-mobile-editor-ux-correction-2026-04-22.md`
+- `implementation-review-53-android-mobile-player-touch-drag-fix-2026-04-22.md`
+- `implementation-review-54-android-realdevice-full-validation-2026-04-22.md`
+- `implementation-review-55-android-landscape-safe-area-fix-2026-04-22.md`

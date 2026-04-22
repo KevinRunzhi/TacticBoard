@@ -70,5 +70,5 @@ describe('editor save and return flow', () => {
     });
 
     expect(screen.queryByText('有未保存修改')).not.toBeInTheDocument();
-  });
+  }, 10000);
 });

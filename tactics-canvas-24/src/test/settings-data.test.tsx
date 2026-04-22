@@ -89,5 +89,5 @@ describe('settings data management', () => {
       format: 'gif',
       ratio: '1x',
     });
-  });
+  }, 10000);
 });

@@ -31,7 +31,7 @@ const Index = () => {
 
   if (projectId && !project) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="app-screen flex items-center justify-center bg-background p-6">
         <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-center shadow-xl">
           <h1 className="text-xl font-semibold text-foreground">项目不存在或已失效</h1>
           <p className="mt-3 text-sm text-muted-foreground">

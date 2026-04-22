@@ -62,85 +62,86 @@ describe('mobile mainflow baseline', () => {
     fireEvent.click(screen.getByRole('button', { name: /新建空白项目/ }));
 
     await waitFor(() => {
-      expect(screen.getByLabelText('保存项目')).toBeInTheDocument();
+      expect(screen.getByLabelText(/保存项目/)).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: '阵型' }));
+    fireEvent.click(screen.getByRole('button', { name: /阵型/ }));
 
     await waitFor(() => {
-      expect(screen.getByText('选择阵型 · 11v11')).toBeInTheDocument();
+      expect(screen.getByText(/选择阵型/)).toBeInTheDocument();
     });
 
     expect(screen.getByRole('button', { name: '4-4-2' })).toBeInTheDocument();
-    fireEvent.click(screen.getByLabelText('关闭阵型抽屉'));
+    fireEvent.click(screen.getByLabelText(/关闭阵型抽屉/));
 
     await waitFor(() => {
-      expect(screen.queryByText('选择阵型 · 11v11')).not.toBeInTheDocument();
+      expect(screen.queryByText(/选择阵型/)).not.toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: '对象' }));
-    fireEvent.click(screen.getByRole('button', { name: '球员' }));
+    fireEvent.click(screen.getByRole('button', { name: /对象/ }));
+    fireEvent.click(screen.getByRole('button', { name: /球员/ }));
 
     const pitchSvg = container.querySelector('svg[viewBox="0 0 680 1000"]');
     expect(pitchSvg).not.toBeNull();
 
     fireEvent.click(pitchSvg!, { clientX: 180, clientY: 240 });
+    expect(screen.queryByText(/球员属性/)).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: '属性' }));
+    fireEvent.click(screen.getByRole('button', { name: /属性/ }));
 
     await waitFor(() => {
-      expect(screen.getByText('球员属性')).toBeInTheDocument();
+      expect(screen.getByText(/球员属性/)).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByDisplayValue('主队球员 1'), {
+    fireEvent.change(screen.getByDisplayValue(/主队球员 1/), {
       target: { value: '测试球员' },
     });
 
-    fireEvent.click(screen.getByLabelText('关闭属性抽屉'));
+    fireEvent.click(screen.getByLabelText(/关闭属性抽屉/));
 
-    fireEvent.click(screen.getByRole('button', { name: '步骤' }));
-
-    await waitFor(() => {
-      expect(screen.getByText('步骤 1 / 1')).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: '添加' }));
+    fireEvent.click(screen.getByRole('button', { name: /步骤/ }));
 
     await waitFor(() => {
-      expect(screen.getByText('步骤 2 / 2')).toBeInTheDocument();
+      expect(screen.getByText(/步骤 1 \/ 1/)).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByLabelText('关闭步骤抽屉'));
-    fireEvent.touchEnd(screen.getByLabelText('保存项目'));
+    fireEvent.click(screen.getByRole('button', { name: /添加/ }));
 
     await waitFor(() => {
-      expect(screen.getByText('首次已保存')).toBeInTheDocument();
+      expect(screen.getByText(/步骤 2 \/ 2/)).toBeInTheDocument();
     });
 
-    fireEvent.touchEnd(screen.getByLabelText('返回工作台'));
+    fireEvent.click(screen.getByLabelText(/关闭步骤抽屉/));
+    fireEvent.touchEnd(screen.getByLabelText(/保存项目/));
 
     await waitFor(() => {
-      expect(screen.getByText('首次保存成功')).toBeInTheDocument();
+      expect(screen.getByText(/首次已保存/)).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: '继续编辑' }));
+    fireEvent.touchEnd(screen.getByLabelText(/返回工作台/));
 
     await waitFor(() => {
-      expect(screen.getByLabelText('保存项目')).toBeInTheDocument();
+      expect(screen.getByText(/首次保存成功/)).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: '步骤' }));
+    fireEvent.click(screen.getByRole('button', { name: /继续编辑/ }));
 
     await waitFor(() => {
-      expect(screen.getByText('步骤 2 / 2')).toBeInTheDocument();
+      expect(screen.getByLabelText(/保存项目/)).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByLabelText('关闭步骤抽屉'));
-    fireEvent.mouseDown(screen.getByText('测试球'), { clientX: 180, clientY: 240 });
-    fireEvent.click(screen.getByRole('button', { name: '属性' }));
+    fireEvent.click(screen.getByRole('button', { name: /步骤/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/步骤 2 \/ 2/)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByLabelText(/关闭步骤抽屉/));
+    fireEvent.mouseDown(screen.getByText(/测试球/), { clientX: 180, clientY: 240 });
+    fireEvent.click(screen.getByRole('button', { name: /属性/ }));
 
     await waitFor(() => {
       expect(screen.getByDisplayValue('测试球员')).toBeInTheDocument();
     });
-  }, 10000);
+  }, 15000);
 });

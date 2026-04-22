@@ -265,7 +265,7 @@ function PlayerProperties({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="player-properties space-y-4">
       <div className="flex items-center justify-center py-4">
         <div className={`relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full text-xl font-bold ${
           player.team === 'home' ? 'bg-team-home' : 'bg-team-away'
@@ -304,6 +304,8 @@ function PlayerProperties({
           </select>
         </PropRow>
       </PropSection>
+
+      <DangerButton onClick={onDelete}>删除球员</DangerButton>
 
       <PropSection title="显示信息">
         <PropRow label="显示样式">

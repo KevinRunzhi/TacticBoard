@@ -25,30 +25,12 @@ import {
   saveDraftState,
   saveProjectState,
 } from '@/data/mockProjects';
+import { createEditorPersistenceFingerprint } from '@/lib/editor-persistence';
 import { cloneStepFrame } from '@/lib/step-frame';
 import type { Workspace } from '@/types/workspace';
 
 const PLAYBACK_INTERVAL_MS = 1200;
 const HISTORY_LIMIT = 50;
-
-function createPersistenceFingerprint(state: EditorState) {
-  return JSON.stringify({
-    projectName: state.projectName,
-    fieldFormat: state.fieldFormat,
-    fieldView: state.fieldView,
-    fieldStyle: state.fieldStyle,
-    playerStyle: state.playerStyle,
-    matchMeta: state.matchMeta,
-    referenceImage: state.referenceImage,
-    orientation: state.orientation,
-    activeFormationId: state.activeFormationId,
-    formationMode: state.formationMode,
-    playerPlacementTeam: state.playerPlacementTeam,
-    currentStepIndex: state.currentStepIndex,
-    space: state.space,
-    steps: state.steps,
-  });
-}
 
 function createAreaId() {
   return `area-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
@@ -107,7 +89,7 @@ function buildInitialSnapshot(
     if (savedState) {
       if (
         projectState &&
-        createPersistenceFingerprint(savedState) === createPersistenceFingerprint(projectState)
+        createEditorPersistenceFingerprint(savedState) === createEditorPersistenceFingerprint(projectState)
       ) {
         clearDraftState(projectId);
       } else {
@@ -209,7 +191,7 @@ export function useEditorState(
   const skipTransientDraftFlushRef = useRef(false);
   const lastProjectSaveFingerprintRef = useRef<string | null>(
     initialSnapshotRef.current?.entrySource === 'project-saved'
-      ? createPersistenceFingerprint(initialSnapshotRef.current.state)
+      ? createEditorPersistenceFingerprint(initialSnapshotRef.current.state)
       : null,
   );
   const [dragAutosaveRevision, setDragAutosaveRevision] = useState(0);
@@ -223,7 +205,7 @@ export function useEditorState(
     hasInitializedAutosaveRef.current = false;
     skipTransientDraftFlushRef.current = false;
     lastProjectSaveFingerprintRef.current = nextSnapshot.entrySource === 'project-saved'
-      ? createPersistenceFingerprint(nextSnapshot.state)
+      ? createEditorPersistenceFingerprint(nextSnapshot.state)
       : null;
   }, [mode, normalizedSeed, projectId, workspace]);
 
@@ -242,7 +224,7 @@ export function useEditorState(
     }
 
     if (projectId) {
-      const currentFingerprint = createPersistenceFingerprint(stateRef.current);
+      const currentFingerprint = createEditorPersistenceFingerprint(stateRef.current);
       if (lastProjectSaveFingerprintRef.current === currentFingerprint) {
         return;
       }
@@ -984,7 +966,7 @@ export function useEditorState(
     }
 
     if (projectId) {
-      const currentFingerprint = createPersistenceFingerprint(currentState);
+      const currentFingerprint = createEditorPersistenceFingerprint(currentState);
       if (lastProjectSaveFingerprintRef.current === currentFingerprint) {
         return;
       }
@@ -1021,13 +1003,15 @@ export function useEditorState(
       ...stateRef.current,
       space: workspace,
     };
+    const nextFingerprint = createEditorPersistenceFingerprint(nextState);
+    const nextProjectId = saveProjectState(projectId, nextState);
 
     if (!projectId) {
       skipTransientDraftFlushRef.current = true;
     }
 
-    lastProjectSaveFingerprintRef.current = createPersistenceFingerprint(nextState);
-    return saveProjectState(projectId, nextState);
+    lastProjectSaveFingerprintRef.current = nextFingerprint;
+    return nextProjectId;
   }, [projectId, workspace]);
 
   const applyFormation = useCallback((formationId: string) => {

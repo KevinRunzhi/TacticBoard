@@ -85,7 +85,7 @@ export function MobileTopBar({
   );
 
   return (
-    <div className="toolbar-bg flex h-12 shrink-0 items-center gap-2 border-b border-border px-2.5">
+    <div className="safe-top toolbar-bg flex min-h-12 shrink-0 items-center gap-2 border-b border-border px-2.5">
       <button
         {...buildTapHandlers('return-to-workspace', onReturnToWorkspace)}
         aria-label="返回工作台"

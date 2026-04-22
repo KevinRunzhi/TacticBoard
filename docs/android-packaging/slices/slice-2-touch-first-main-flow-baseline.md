@@ -147,9 +147,36 @@ Slice 2 负责把 Android 上最核心的编辑主链路收口到“真实触控
 ## 10. 建议留痕
 
 - `implementation-review-41-android-slice2-touch-mainflow-restart-2026-04-20.md`
+- `implementation-review-50-android-mobile-editor-ux-followup-2026-04-22.md`
+- `implementation-review-51-android-mobile-editor-ux-realdevice-validation-2026-04-22.md`
+- `implementation-review-52-android-mobile-editor-ux-correction-2026-04-22.md`
+- `implementation-review-53-android-mobile-player-touch-drag-fix-2026-04-22.md`
+
+## 12. 2026-04-22 交互补充收口
+
+- `PitchCanvas` 现在要求把“fit 到屏幕”的尺寸直接落实到 SVG 实际渲染宽高上，而不是只在缩放文案上伪装成 `100%`。进入项目时的 `100%` 必须对应真实的基准尺寸；在手机竖屏下，球场应贴齐可用宽度。
+- On mobile and tablet, selecting a player no longer auto-opens the player-properties drawer. This flow is explicitly back to manual drawer entry via the properties affordance.
+- The primary player delete action now sits below the full `基础信息` block and above `显示信息`, instead of splitting the basic-info rows.
+- Android real-device recheck on `vivo X100s` confirms the corrected initial fit behavior and confirms that tapping a player does not auto-open properties. The delete action text is fixed to `删除球员`; the legacy bottom action remains hidden.
+- Mobile object manipulation now explicitly requires single-finger drag support for players on Android. Selecting a player without movement is not enough; a real touch drag must move the player itself instead of falling through to canvas pan.
 
 重点记录：
 - 哪些主链路回归已经自动化覆盖
 - 哪些设备侧触控场景已经命中
 - 这轮修复解决了哪些接口漂移或触控隐患
 - 还有哪些风险只是开发态噪音，而不是产品态阻塞
+## 11. 2026-04-22 补充收口
+
+- Mobile / tablet editor shell 现在明确要求使用 dynamic viewport + safe-area；不再允许直接依赖 `h-screen` 或 `min-h-screen`，否则真机状态栏、手势区会被应用内容覆盖。
+- `PitchCanvas` 现在明确要求在移动端做容器级 fit、zoom/pan 边界夹紧和原生触控冲突屏蔽；进入编辑器后球场不能再因为容器高度漂移或过量平移而出现整屏黑场/空白。
+- 这轮验收的设备侧最小证据包括：
+  - 真机首页截图，确认顶部安全区已恢复。
+  - 真机编辑页首次进入截图，确认球场初始可见且不再被错误压到更低位置。
+  - 真机放大与拖动画布后截图，确认球场仍留在视口中，没有出现整屏黑场。
+
+## 13. 2026-04-22 Landscape Safe-Area Follow-Up
+
+- `TopToolbar` 现在是 phone 横屏进入 tablet breakpoint 时的唯一合法顶部壳层，必须通过专用 `top-toolbar-shell` 承接 safe-area 与 landscape phone 顶部补偿。
+- 只验证 `MobileTopBar` 不足以视为 Slice 2 editor chrome 验收完成；在真机横屏下，系统会走 `TopToolbar` 这条 tablet 路径。
+- 2026-04-22 安装态 release APK 在 `vivo X100s` 上已再次验证：`analysis/android-fulltest/57-landscape-after-fix.png` 表明顶部编辑栏不再压进系统状态区，`58-portrait-restored-after-fix.png` 表明切回竖屏后没有把现有 editor chrome 布局带坏。
+- 这轮修复只解决了 editor chrome 的 landscape safe-area 问题，不等于 Slice 6 已关闭；后续仍需继续补齐 release APK 下球员拖动、阵型切换和参考底图导入的真机正向证据。

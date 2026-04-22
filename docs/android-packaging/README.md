@@ -10,6 +10,7 @@
 - `android-acceptance-standard.md`
 - `android-device-compatibility-matrix.md`
 - `android-device-validation-plan.md`
+- `android-phase1-realdevice-validation-status.md`
 - `android-phase1-slice-plan.md`
 - `android-development-guide.md`
 - `slices/README.md`
@@ -63,19 +64,20 @@
 2. `android-windows-toolchain-setup.md`
 3. `android-acceptance-standard.md`
 4. `android-development-guide.md`
-5. `android-phase1-slice-plan.md`
-6. `slices/README.md`
-7. `slices/slice-0-android-shell-feasibility-baseline.md`
-8. `slices/slice-1-runtime-platform-and-router-boundary.md`
-9. `slices/slice-2-touch-first-main-flow-baseline.md`
-10. `slices/slice-3-png-export-and-system-share-boundary.md`
-11. `slices/slice-4-system-picker-and-local-copy-asset-import-boundary.md`
-12. `slices/slice-5-save-recovery-lifecycle-orientation-hardening.md`
-13. `slices/slice-6-device-tier-validation-regression-phase1-closure.md`
-14. `android-technical-architecture.md`
-15. `android-internal-interface-spec.md`
-16. `android-device-compatibility-matrix.md`
-17. `android-device-validation-plan.md`
+5. `android-phase1-realdevice-validation-status.md`
+6. `android-phase1-slice-plan.md`
+7. `slices/README.md`
+8. `slices/slice-0-android-shell-feasibility-baseline.md`
+9. `slices/slice-1-runtime-platform-and-router-boundary.md`
+10. `slices/slice-2-touch-first-main-flow-baseline.md`
+11. `slices/slice-3-png-export-and-system-share-boundary.md`
+12. `slices/slice-4-system-picker-and-local-copy-asset-import-boundary.md`
+13. `slices/slice-5-save-recovery-lifecycle-orientation-hardening.md`
+14. `slices/slice-6-device-tier-validation-regression-phase1-closure.md`
+15. `android-technical-architecture.md`
+16. `android-internal-interface-spec.md`
+17. `android-device-compatibility-matrix.md`
+18. `android-device-validation-plan.md`
 
 说明：
 

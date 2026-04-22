@@ -115,7 +115,7 @@ export function MobileToolbar({
   return (
     <>
       {expandedCategory && (
-        <div className="absolute bottom-[60px] left-0 right-0 z-40">
+        <div className="absolute bottom-[calc(60px+env(safe-area-inset-bottom,0px))] left-0 right-0 z-40">
           <div className="absolute inset-0 -top-[100vh]" onClick={() => setExpandedCategory(null)} />
           <div className="relative max-h-[40vh] overflow-y-auto rounded-t-xl border-t border-border p-3 shadow-2xl panel-bg">
             {expandedCategory === 'player' && (
@@ -236,7 +236,7 @@ export function MobileToolbar({
         </div>
       )}
 
-      <div className="relative z-50 flex h-[60px] shrink-0 items-center gap-1 overflow-x-auto border-t border-border px-1.5 toolbar-bg">
+      <div className="safe-bottom relative z-50 flex min-h-[60px] shrink-0 items-center gap-1 overflow-x-auto border-t border-border px-1.5 toolbar-bg">
         {entries.map((entry) => (
           <button
             key={entry.key}

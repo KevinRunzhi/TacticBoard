@@ -22,7 +22,7 @@ const matchMeta: MatchMeta = {
 function renderRightPanel(overrides?: Partial<ComponentProps<typeof RightPanel>>) {
   return render(
     <RightPanel
-      projectName="项目"
+      projectName="椤圭洰"
       selectedPlayer={null}
       selectedLine={null}
       selectedText={null}
@@ -96,7 +96,7 @@ describe("right panel image import", () => {
       },
     });
 
-    fireEvent.touchEnd(screen.getByRole("button", { name: /导入参考底图/i }));
+    fireEvent.touchEnd(screen.getByRole("button", { name: "导入参考底图" }));
 
     expect(pickImageFileMock).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(importedFiles).toHaveLength(1));
@@ -107,7 +107,7 @@ describe("right panel image import", () => {
     const importedFiles: File[] = [];
     const selectedPlayer: Player = {
       id: "player-1",
-      name: "测试球员",
+      name: "娴嬭瘯鐞冨憳",
       number: 9,
       position: "ST",
       team: "home",
@@ -126,10 +126,35 @@ describe("right panel image import", () => {
       },
     });
 
-    fireEvent.touchEnd(screen.getByRole("button", { name: /导入球员头像/i }));
+    fireEvent.touchEnd(screen.getByRole("button", { name: "导入球员头像" }));
 
     expect(pickImageFileMock).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(importedFiles).toHaveLength(1));
     expect(importedFiles[0]).toBe(file);
+  });
+
+  it("surfaces the primary player delete action below the basic-info rows", () => {
+    const selectedPlayer: Player = {
+      id: "player-1",
+      name: "娴嬭瘯鐞冨憳",
+      number: 9,
+      position: "ST",
+      team: "home",
+      x: 50,
+      y: 50,
+    };
+
+    renderRightPanel({
+      selectedPlayer,
+    });
+
+    const primaryDeleteButton = screen.getByRole("button", { name: "删除球员" });
+
+    expect(
+      screen.getByDisplayValue("ST").compareDocumentPosition(primaryDeleteButton) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0);
+    expect(
+      primaryDeleteButton.compareDocumentPosition(screen.getByText("显示样式")) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0);
   });
 });

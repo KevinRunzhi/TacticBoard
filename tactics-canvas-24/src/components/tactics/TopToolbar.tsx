@@ -96,7 +96,7 @@ export function TopToolbar({
   onOpenRightPanel,
 }: TopToolbarProps) {
   return (
-    <div className="toolbar-bg flex h-12 shrink-0 items-center gap-1 border-b border-border px-3">
+    <div className="top-toolbar-shell">
       <button
         onClick={onReturnToWorkspace}
         aria-label="返回工作台"
