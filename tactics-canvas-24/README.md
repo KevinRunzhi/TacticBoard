@@ -64,14 +64,14 @@ npm run tauri:android:build
 说明：
 
 - 这些 signed APK 是“仓库内已经验证完成的本地 release 产物”
-- 它们不等于“GitHub Releases 上已经公开挂载的 Android 下载资产”
-- 截至 `2026-04-23`，公开 GitHub release 仍是 Windows `v0.1.0`
+- GitHub Releases 当前面向下载用户提供的 Android 资产为 `TacticBoard-android.apk`
+- 本地技术产物文件名与公开下载资产名不要求一致
 
 ## 当前工程状态
 
 - Windows 第一阶段打包链路已完成并已有公开 release
 - Android Phase 1 已完成源代码、签名、真机安装与验收基线
-- Android 当前最重要的差异不再是“能不能做出来”，而是“何时把 APK 作为公开 release 资产发出去”
+- Android 公开 Release 资产已上线，当前对外下载名为 `TacticBoard-android.apk`
 
 ## 相关文档
 

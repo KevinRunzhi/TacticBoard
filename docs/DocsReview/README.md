@@ -136,3 +136,6 @@ Recommended usage:
 - `implementation-review-62-signed-apk-manual-acceptance-2026-04-23.md`
 - `implementation-review-63-signed-apk-reference-import-user-confirmation-2026-04-23.md`
 - `implementation-review-64-readme-and-release-doc-refresh-2026-04-23.md`
+- `implementation-review-65-android-release-asset-publish-2026-04-23.md`
+- `implementation-review-66-android-release-user-facing-download-labeling-2026-04-23.md`
+- `implementation-review-33-quality-and-windows-validation-hardening-2026-04-23.md`
