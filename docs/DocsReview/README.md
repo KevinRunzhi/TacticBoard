@@ -126,3 +126,8 @@ Recommended usage:
 - `implementation-review-53-android-mobile-player-touch-drag-fix-2026-04-22.md`
 - `implementation-review-54-android-realdevice-full-validation-2026-04-22.md`
 - `implementation-review-55-android-landscape-safe-area-fix-2026-04-22.md`
+- `implementation-review-56-android-slice6-p0-phone-manual-validation-2026-04-22.md`
+- `implementation-review-57-android-slice6-p0-tablet-realdevice-validation-2026-04-22.md`
+- `implementation-review-58-android-slice6-tablet-share-return-fix-2026-04-23.md`
+- `implementation-review-59-android-slice6-p1-phone-risk-observation-2026-04-23.md`
+- `implementation-review-android-phase1-final-closure-2026-04-23.md`

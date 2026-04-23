@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import App from "@/App";
+import { createBlankEditorState, saveProjectState } from "@/data/mockProjects";
+import { rememberAndroidShareReturnRoute } from "@/lib/android-share-return";
 
 const defaultUserAgent = window.navigator.userAgent;
 const androidUserAgent =
@@ -33,6 +35,7 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
   window.localStorage.clear();
+  window.sessionStorage.clear();
   setTauriWindow(false);
   setUserAgent(defaultUserAgent);
   window.history.replaceState({}, "", "/");
@@ -68,5 +71,25 @@ describe("android app router", () => {
 
     expect(await screen.findByText("战术工作台")).toBeInTheDocument();
     expect(window.location.hash).toBe("#/");
+  });
+
+  it("restores the editor route after android share returns the app to dashboard", async () => {
+    setTauriWindow(true);
+    setUserAgent(androidUserAgent);
+
+    const projectState = createBlankEditorState({
+      projectName: "Android Share Return Project",
+    });
+    const projectId = saveProjectState(undefined, projectState);
+
+    rememberAndroidShareReturnRoute(`/editor/${projectId}`);
+    window.history.replaceState({}, "", "/");
+    window.location.hash = "#/";
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(window.location.hash).toBe(`#/editor/${projectId}`);
+    });
   });
 });

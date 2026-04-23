@@ -96,7 +96,7 @@ Android 第一阶段默认冻结以下顺序，不应随意重排：
 - Slice 3：当前分支已重新建立 Android PNG -> 系统分享闭环，完成 `build / test / lint`、`tauri:build`、桌面 `tauri:dev` smoke、`export-save` 自动化回归，以及 `Pixel_7` 模拟器设备侧系统分享硬证据；当前可按片内门槛视为已关闭，真机 / 打包 APK 观察保留到 Slice 6
 - Slice 4：当前分支已重新建立 Android 系统选择器 + 本地复制素材导入边界，完成 `build / test / lint`、`tauri:build`、桌面 `tauri:dev` smoke、Android `tauri:android:dev`、`asset-import` / 头像 / 参考图自动化回归，以及 `Pixel_7` 模拟器设备侧系统选择器、本地复制、参考底图导入、球员头像导入与取消路径硬证据；当前可按片内门槛视为已关闭，真机 / release APK 留到 Slice 6
 - Slice 5：当前分支已重建保存 / 恢复 / 生命周期 / 方向切换 baseline，并拿到 `Pixel_7` 手机模拟器与 `Pixel_Tablet_API_34` 平板模拟器 Android dev 壳里的未保存新建会话与已保存正式项目恢复记录；当前可写成“手机 + 平板模拟器验证通过”，但仍不能写成“真机完成”，真机覆盖留到 Slice 6
-- Slice 6：当前没有正式设备验证收口记录，默认未开始
+- Slice 6：当前已经开始做设备收口，已拥有 `vivo X100s` 安装态真机记录、`HUAWEI TGR-W10` 安装态平板真机记录、平板上系统分享返回原编辑器的安装态复验、`vivo X100s` 上一轮 `P1` 风险观察、当前提交点 Web / Windows 自动化回归，以及最终统一收口 `DocsReview`；但仍未关闭，因为当前状态尚未固定成干净已提交 acceptance baseline
 
 这里的含义不是否定旧 review 的价值，而是要求：
 
@@ -784,8 +784,17 @@ npm run lint
 
 ### Current restart status
 
-- 当前没有正式的 Slice 6 收口记录
-- 默认按未开始处理，而且不得在 Slice 3 / 4 / 5 未关闭时提前执行
+- 当前分支已经进入 Slice 6 执行阶段，不再按“未开始”处理
+- 当前已经有：
+  - `vivo X100s` 安装态真机记录
+  - `HUAWEI TGR-W10` 安装态平板真机记录
+  - `HUAWEI TGR-W10` 上系统分享返回原编辑器的安装态复验
+  - `vivo X100s` 上深度定制 ROM / 激进后台管理风险观察
+  - 当前提交点的 `build / test / lint / tauri:build / tauri:dev` 回归
+  - 用户手工确认的球员拖动、阵型切换、参考底图导入
+  - 最终统一收口 `DocsReview`
+- 当前仍未关闭，因为还缺：
+  - 基于干净已提交 acceptance baseline 的正式阶段完成声明
 
 ### Objective
 
@@ -824,6 +833,9 @@ npm run lint
   - 头像导入
   - 参考底图导入
   - 保存 / 恢复 / 生命周期 / 方向切换
+- P0 平板的导出 / 系统分享返回路径必须明确验证：
+  - 系统分享面板可拉起
+  - 取消或返回后仍回到原编辑器，而不是工作台
 - 至少一轮 P1 风险观察完成
 - Web 回归通过
 - Windows 平台桥观察无异常
@@ -831,6 +843,7 @@ npm run lint
 ### Exit criteria
 
 - Android 第一阶段 P0 设备门槛满足
+- P0 平板不存在“分享面板返回后落回工作台”的导出返回阻塞
 - P1 风险已记录
 - Web / Windows 回归可接受
 - 已有最终 DocsReview 证据支撑 Android 第一阶段完成判断
@@ -840,6 +853,7 @@ npm run lint
 
 - 只有模拟器 smoke 或单设备 smoke
 - 只有 P0 口头判断，没有设备等级映射记录
+- P0 平板只证明了“分享面板能打开”，但返回路径仍然落回工作台
 - 只有 Android 本身验证，没有 Web / Windows 回归
 - 发现问题后在本片临时打补丁，而不是回到对应切片修正
 

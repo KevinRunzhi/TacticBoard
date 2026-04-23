@@ -13,10 +13,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  clearPendingAndroidShareReturn,
+  rememberAndroidShareReturnRoute,
+} from '@/lib/android-share-return';
 import { normalizeProjectNameValue } from '@/lib/project-name';
 import { createEditorPersistenceFingerprint } from '@/lib/editor-persistence';
 import { createDefaultExportConfig } from '@/lib/export-config';
 import { saveExportBinary } from '@/lib/export-save';
+import { getRuntimePlatform } from '@/lib/platform';
 import { getGifConstraintMessage } from '@/lib/tactics-export';
 import { toast } from '@/components/ui/sonner';
 import { TopToolbar, type ToolbarSaveStatusTone } from './TopToolbar';
@@ -397,20 +402,27 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
     }
 
     try {
+      const isAndroidPngShare =
+        exportConfig.format === 'png' && getRuntimePlatform() === 'android-tauri';
       const bytes =
         exportConfig.format === 'gif'
           ? await pitchCanvasRef.current.exportGif(displayProjectName, exportConfig)
           : await pitchCanvasRef.current.exportPng(displayProjectName, exportConfig);
+      if (isAndroidPngShare) {
+        rememberAndroidShareReturnRoute(`${location.pathname}${location.search}`);
+      }
       const saveResult = await saveExportBinary({
         fileName: displayProjectName,
         format: exportConfig.format,
         bytes,
       });
       if (saveResult.status === 'cancelled') {
+        clearPendingAndroidShareReturn();
         toast.message('已取消导出保存');
         return;
       }
       if (saveResult.status === 'failed') {
+        clearPendingAndroidShareReturn();
         toast.error('导出失败，请稍后重试', {
           description: saveResult.reason,
         });
@@ -422,14 +434,16 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
           description: `${displayProjectName}.${exportConfig.format}`,
         });
       } else {
+        clearPendingAndroidShareReturn();
         toast.success('已导出当前战术板', {
           description: `${displayProjectName}.${exportConfig.format}`,
         });
       }
     } catch (error) {
+      clearPendingAndroidShareReturn();
       toast.error('导出失败，请稍后重试');
     }
-  }, [displayProjectName, exportConfig, state.steps.length]);
+  }, [displayProjectName, exportConfig, location.pathname, location.search, state.steps.length]);
 
   const handleReferenceImageImport = useCallback(async (file: File) => {
     try {
