@@ -22,10 +22,12 @@
 
 说明：
 
-- 本轮验证基于当前本地工作区，而不是干净已提交的 acceptance baseline
-- APK 由当前本地工作区构建后安装到真机
-- release APK 为本地验证方便，使用本机 debug keystore 临时签名安装
-- 因此这些结论可视为 `当前本地工作区的真机安装态状态`，不能直接写成 Android Phase 1 正式完成
+- `2026-04-23` 起，Android Phase 1 的正式完成声明绑定到已提交基线 `7e4aca8`
+- 该基线固定了：
+  - Android share-return 修复
+  - P0 手机 / P0 平板 / P1 风险观察记录
+  - 最终 `DocsReview`
+- release APK 验证链里仍包含本机 debug keystore 临时签名的安装包，这一点继续作为已记录限制保留
 - 2026-04-22 后续复验已经确认：phone 横屏进入 tablet breakpoint 后，`TopToolbar` 已不再压进系统状态区
 - 新的设备侧硬证据：
   - `analysis/android-fulltest/56-open-recent-after-fix.png`
@@ -35,6 +37,7 @@
 - 2026-04-22 同一轮后续还新增了用户手工真机复验结论：`vivo X100s` 上安装态 release APK 的球员拖动、阵型切换、参考底图导入均已确认可用；对应记录见 `docs/DocsReview/implementation-review-56-android-slice6-p0-phone-manual-validation-2026-04-22.md`
 - 2026-04-23 已在同一台 `HUAWEI TGR-W10` 安装态 debug-signed release APK 上复验通过：从华为系统分享面板按返回后，应用会回到原编辑器，而不是落回工作台；对应记录见 `docs/DocsReview/implementation-review-58-android-slice6-tablet-share-return-fix-2026-04-23.md`
 - 2026-04-23 已用同一台 `vivo X100s` 完成一轮 `P1` 风险观察：当前安装态 debug-signed release APK 在冷启动、系统分享与 `Home -> 热返回` 路径上未观察到阻塞级 ROM 差异；对应记录见 `docs/DocsReview/implementation-review-59-android-slice6-p1-phone-risk-observation-2026-04-23.md`
+- 2026-04-23 已基于已提交基线 `7e4aca8` 做出正式完成声明；对应记录见 `docs/DocsReview/implementation-review-60-android-phase1-completion-declaration-2026-04-23.md`
 
 ## Passed With Real-Device Hard Evidence
 
@@ -109,23 +112,23 @@
 - 对应留痕见：
   - `docs/DocsReview/implementation-review-59-android-slice6-p1-phone-risk-observation-2026-04-23.md`
 
-## Open Issues And Unclosed Items
+## Open Issues And Remaining Risks
 
-截至 `2026-04-23`，以下项目仍未收口：
+截至 `2026-04-23`，以下项目作为完成声明后的剩余风险保留：
 
-1. 当前设备矩阵层面已无新的 P0 / P1 硬缺口，但仍有应明确记录的限制
+1. 当前设备矩阵层面已无新的 P0 / P1 阻塞，但仍保留已记录限制
    - `P1` 这一轮由 `vivo X100s` 同时承担 `P0` 主流手机与 `P1` 风险观察角色
    - `P1` 文件选择器没有新增同轮硬证据，仍主要依赖前一轮用户手工确认
-   - 这两项目前记为剩余风险，而不是 Slice 6 设备矩阵阻塞
-2. 当前 final closure review 已完成，但正式阶段完成声明仍未收口
-   - 本轮结论仍建立在当前未提交工作区
-   - 还没有把这套验证结果固定成干净已提交 acceptance baseline
+2. 当前完成声明不等于“广泛 Android 兼容性完成”
+   - 尚未补第二台独立 `P1` 风险设备
+   - 尚未补正式发布签名包验证
+   - 尚未扩大到所有 ROM / 所有设备形态
 
 ## What This Means For Slice 6
 
 当前 Slice 6 结论：
 
-- `未达到退出条件`
+- `已关闭`
 
 原因：
 
@@ -135,16 +138,15 @@
 - 2026-04-23 已在 `HUAWEI TGR-W10` 上复验通过：系统分享面板返回后仍会回到原编辑器
 - 2026-04-23 已完成至少一轮 `P1` 风险观察，当前未发现会阻塞 Android Phase 1 的 ROM 级差异
 - 2026-04-23 已完成最终统一收口 `DocsReview`
-- 但当前仍不能直接写成 `Android Phase 1 已完成`，因为还缺：
-  - 基于干净已提交 acceptance baseline 的正式阶段完成声明
+- 2026-04-23 已基于已提交基线 `7e4aca8` 做出正式完成声明
 
-因此，当前还不能宣称：
+因此，当前可以正式宣称：
 
 - `Android Phase 1 已完成`
 
 ## Next Required Validation
 
-下一轮最优先的真机验证顺序：
+当前不再有 Android Phase 1 阻塞级后续验证；如需继续扩展验证，优先顺序为：
 
-1. 把当前工作区固定成可追溯的已提交 acceptance baseline
+1. 增加第二台独立 `P1` 风险设备
 2. 如果后续要扩大 ROM 风险覆盖，再补第二台 `P1` 设备或补一轮 `P1` 文件选择器硬证据
