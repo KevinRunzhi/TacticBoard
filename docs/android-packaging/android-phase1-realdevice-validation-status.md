@@ -38,6 +38,13 @@
 - 2026-04-23 已在同一台 `HUAWEI TGR-W10` 安装态 debug-signed release APK 上复验通过：从华为系统分享面板按返回后，应用会回到原编辑器，而不是落回工作台；对应记录见 `docs/DocsReview/implementation-review-58-android-slice6-tablet-share-return-fix-2026-04-23.md`
 - 2026-04-23 已用同一台 `vivo X100s` 完成一轮 `P1` 风险观察：当前安装态 debug-signed release APK 在冷启动、系统分享与 `Home -> 热返回` 路径上未观察到阻塞级 ROM 差异；对应记录见 `docs/DocsReview/implementation-review-59-android-slice6-p1-phone-risk-observation-2026-04-23.md`
 - 2026-04-23 已基于已提交基线 `7e4aca8` 做出正式完成声明；对应记录见 `docs/DocsReview/implementation-review-60-android-phase1-completion-declaration-2026-04-23.md`
+- 2026-04-23 已基于本地 release keystore 产出并校验通过 universal signed APK：
+  - `tactics-canvas-24/src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk`
+  - `tactics-canvas-24/src-tauri/gen/android/app/build/outputs/apk/universal/release/TacticBoard_0.1.0_universal_release_signed.apk`
+  - keystore 与口令文件现保存在 E 盘工作区本地目录 `.tacticboard-release/`
+  - 2026-04-23 复验 `adb install -r -g` 时，系统先返回 `INSTALL_FAILED_UPDATE_INCOMPATIBLE`：当前设备已安装的 `com.kevinrunzhi.tacticboard` 与 signed APK 证书不一致
+  - 同轮在卸载旧的 debug / 本地签名包后，`adb install -g` 成功，且 `adb shell am start -W` 命中 `LaunchState: COLD`
+  - 对应记录见 `docs/DocsReview/implementation-review-61-android-release-apk-signing-2026-04-23.md`
 
 ## Passed With Real-Device Hard Evidence
 
@@ -121,7 +128,7 @@
    - `P1` 文件选择器没有新增同轮硬证据，仍主要依赖前一轮用户手工确认
 2. 当前完成声明不等于“广泛 Android 兼容性完成”
    - 尚未补第二台独立 `P1` 风险设备
-   - 尚未补正式发布签名包验证
+   - 已补 signed APK 生成、签名校验与真机安装；但当前设备若已存在不同证书签名的旧包，仍需先卸载旧包
    - 尚未扩大到所有 ROM / 所有设备形态
 
 ## What This Means For Slice 6
