@@ -64,21 +64,6 @@
 
 - 当前公开 Release 已提供 Android 安装包（APK）
 - 当前 Android 安装与下载入口以 GitHub Releases 页面为准
-- 如果你要看当前 Android 分发与签名状态，请直接看：
-  - [Android Release Distribution Status](docs/android-packaging/android-release-distribution-status.md)
-  - [Android Development Guide](docs/android-packaging/android-development-guide.md)
-
-## 当前版本已经覆盖的主链路
-
-- 工作台、项目页、设置页、编辑器主壳层
-- 本地项目保存、草稿恢复、最近项目继续编辑
-- 球员、足球、文本、线路、区域、参考底图等核心对象编辑
-- 多步骤新增、复制、删除、重排与播放
-- PNG 导出
-- Windows GIF 导出
-- Android 系统分享
-- Windows 安装包构建
-- Android 安装包（APK）构建与验收基线
 
 ## 当前公开发布状态
 
@@ -91,6 +76,18 @@
 
 - [Android Release Distribution Status](docs/android-packaging/android-release-distribution-status.md)
 - [Android Phase 1 Real-Device Validation Status](docs/android-packaging/android-phase1-realdevice-validation-status.md)
+
+## 当前版本已经覆盖的主链路
+
+- 工作台、项目页、设置页、编辑器主壳层
+- 本地项目保存、草稿恢复、最近项目继续编辑
+- 球员、足球、文本、线路、区域、参考底图等核心对象编辑
+- 多步骤新增、复制、删除、重排与播放
+- PNG 导出
+- Windows GIF 导出
+- Android 系统分享
+- Windows 安装包构建
+- Android 安装包（APK）构建与验收基线
 
 ## 当前明确不做的事
 
