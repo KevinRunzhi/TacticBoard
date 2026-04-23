@@ -154,6 +154,11 @@
 - 瀵瑰簲鐣欑棔瑙侊細
   - `docs/DocsReview/implementation-review-62-signed-apk-manual-acceptance-2026-04-23.md`
 
+- `2026-04-23` follow-up: the user manually confirmed on the same `vivo X100s` signed release APK that `Project Properties -> Import Reference Image -> System Picker -> Select Image -> Import Complete` succeeds.
+- This closes the remaining signed-APK reference-import gap left by review 62.
+- Follow-up record:
+  - `docs/DocsReview/implementation-review-63-signed-apk-reference-import-user-confirmation-2026-04-23.md`
+
 ## Open Issues And Remaining Risks
 
 截至 `2026-04-23`，以下项目作为完成声明后的剩余风险保留：

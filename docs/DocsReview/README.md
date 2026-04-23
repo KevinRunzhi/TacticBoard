@@ -134,3 +134,4 @@ Recommended usage:
 - `implementation-review-60-android-phase1-completion-declaration-2026-04-23.md`
 - `implementation-review-61-android-release-apk-signing-2026-04-23.md`
 - `implementation-review-62-signed-apk-manual-acceptance-2026-04-23.md`
+- `implementation-review-63-signed-apk-reference-import-user-confirmation-2026-04-23.md`
