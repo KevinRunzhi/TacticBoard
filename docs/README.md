@@ -41,6 +41,7 @@ This folder keeps the active documentation baseline for the project.
 - `android-packaging/android-technical-architecture.md`
 - `android-packaging/android-internal-interface-spec.md`
 - `android-packaging/android-windows-toolchain-setup.md`
+- `android-packaging/android-release-distribution-status.md`
 - `android-packaging/android-device-compatibility-matrix.md`
 - `android-packaging/android-device-validation-plan.md`
 - `android-packaging/android-acceptance-standard.md`
