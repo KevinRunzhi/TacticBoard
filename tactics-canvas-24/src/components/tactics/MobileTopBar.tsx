@@ -1,4 +1,5 @@
-import { Home, ChevronDown, Download, Save } from 'lucide-react';
+import { useCallback, useRef } from 'react';
+import { ChevronDown, Download, Home, Save } from 'lucide-react';
 import { FieldFormat, FieldView } from '@/types/tactics';
 import type { ToolbarSaveStatusTone } from './TopToolbar';
 import {
@@ -46,12 +47,49 @@ export function MobileTopBar({
   onExport,
   onReturnToWorkspace,
 }: MobileTopBarProps) {
+  const lastTouchActivationRef = useRef<Record<string, number>>({});
+
+  const triggerTouchAction = useCallback((key: string, action: () => void) => {
+    const now = Date.now();
+    const lastActivation = lastTouchActivationRef.current[key] ?? 0;
+    if (now - lastActivation < 350) {
+      return;
+    }
+    lastTouchActivationRef.current[key] = now;
+    action();
+  }, []);
+
+  const buildTapHandlers = useCallback(
+    (key: string, action: () => void) => ({
+      onClick: () => {
+        const now = Date.now();
+        const lastActivation = lastTouchActivationRef.current[key] ?? 0;
+        if (now - lastActivation < 350) {
+          return;
+        }
+        action();
+      },
+      onPointerUp: (event: React.PointerEvent<HTMLButtonElement>) => {
+        if (event.pointerType !== 'touch') {
+          return;
+        }
+        event.preventDefault();
+        triggerTouchAction(key, action);
+      },
+      onTouchEnd: (event: React.TouchEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+        triggerTouchAction(key, action);
+      },
+    }),
+    [triggerTouchAction],
+  );
+
   return (
-    <div className="toolbar-bg flex h-11 shrink-0 items-center gap-1.5 border-b border-border px-3">
+    <div className="safe-top toolbar-bg flex min-h-12 shrink-0 items-center gap-2 border-b border-border px-2.5">
       <button
-        onClick={onReturnToWorkspace}
+        {...buildTapHandlers('return-to-workspace', onReturnToWorkspace)}
         aria-label="返回工作台"
-        className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:text-foreground"
+        className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
       >
         <Home className="h-4 w-4" />
       </button>
@@ -63,7 +101,7 @@ export function MobileTopBar({
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="flex h-6 items-center gap-0.5 rounded px-2 text-[10px] text-muted-foreground hover:bg-secondary hover:text-foreground">
+          <button className="flex h-8 items-center gap-1 rounded-lg px-2.5 text-[11px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
             {formatLabels[fieldFormat]}
             <ChevronDown className="h-2.5 w-2.5" />
           </button>
@@ -83,7 +121,7 @@ export function MobileTopBar({
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="flex h-6 items-center gap-0.5 rounded px-2 text-[10px] text-muted-foreground hover:bg-secondary hover:text-foreground">
+          <button className="flex h-8 items-center gap-1 rounded-lg px-2.5 text-[11px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
             {viewLabels[fieldView]}
             <ChevronDown className="h-2.5 w-2.5" />
           </button>
@@ -102,17 +140,17 @@ export function MobileTopBar({
       </DropdownMenu>
 
       <button
-        onClick={onSave}
+        {...buildTapHandlers('save-project', onSave)}
         aria-label="保存项目"
-        className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:text-foreground"
+        className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
       >
         <Save className="h-3.5 w-3.5" />
       </button>
 
       <button
-        onClick={onExport}
+        {...buildTapHandlers('export-project', onExport)}
         aria-label="导出项目"
-        className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:text-foreground"
+        className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
       >
         <Download className="h-3.5 w-3.5" />
       </button>

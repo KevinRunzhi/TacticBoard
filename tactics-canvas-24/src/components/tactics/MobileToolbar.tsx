@@ -1,8 +1,16 @@
-import { useState, type ReactNode } from 'react';
+import {
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+  type TouchEvent as ReactTouchEvent,
+  type MouseEvent as ReactMouseEvent,
+} from 'react';
 import {
   Circle,
   ListOrdered,
   Settings2,
+  Shirt,
   Square,
   Target,
   TrendingUp,
@@ -19,6 +27,7 @@ interface MobileToolbarProps {
   onPlayerPlacementTeamChange: (team: Team) => void;
   onOpenSteps: () => void;
   onOpenProperties: () => void;
+  onOpenFormations: () => void;
 }
 
 type ToolCategory = 'player' | 'line' | 'text' | 'zone' | null;
@@ -39,18 +48,63 @@ export function MobileToolbar({
   onPlayerPlacementTeamChange,
   onOpenSteps,
   onOpenProperties,
+  onOpenFormations,
 }: MobileToolbarProps) {
   const [expandedCategory, setExpandedCategory] = useState<ToolCategory>(null);
+  const lastActionTriggerRef = useRef<{ key: string; at: number } | null>(null);
 
   const toggleCategory = (category: ToolCategory) => {
     setExpandedCategory((previous) => (previous === category ? null : category));
   };
 
+  const triggerAction = (actionKey: string, action: () => void) => {
+    const now = Date.now();
+    const lastTrigger = lastActionTriggerRef.current;
+
+    if (lastTrigger && lastTrigger.key === actionKey && now - lastTrigger.at < 400) {
+      return;
+    }
+
+    lastActionTriggerRef.current = { key: actionKey, at: now };
+    action();
+  };
+
+  const createTapHandlers = (actionKey: string, action: () => void) => ({
+    onClick: (event: ReactMouseEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      triggerAction(actionKey, action);
+    },
+    onPointerDown: (event: ReactPointerEvent<HTMLButtonElement>) => {
+      if (event.pointerType === 'touch') {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    },
+    onPointerUp: (event: ReactPointerEvent<HTMLButtonElement>) => {
+      if (event.pointerType === 'touch') {
+        event.preventDefault();
+        event.stopPropagation();
+        triggerAction(actionKey, action);
+      }
+    },
+    onTouchStart: (event: ReactTouchEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+    },
+    onTouchEnd: (event: ReactTouchEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      triggerAction(actionKey, action);
+    },
+  });
+
   const isLineTool = currentTool.startsWith('line-');
 
-  const entries: { key: ToolCategory | 'steps' | 'props' | 'select'; icon: ReactNode; label: string; active?: boolean }[] = [
+  const entries: { key: ToolCategory | 'steps' | 'props' | 'select' | 'formations'; icon: ReactNode; label: string; active?: boolean }[] = [
     { key: 'select', icon: <Target className="h-4 w-4" />, label: '选择', active: currentTool === 'select' },
     { key: 'player', icon: <Users className="h-4 w-4" />, label: '对象', active: currentTool === 'player' || currentTool === 'ball' },
+    { key: 'formations', icon: <Shirt className="h-4 w-4" />, label: '阵型' },
     { key: 'line', icon: <TrendingUp className="h-4 w-4" />, label: '线路', active: isLineTool },
     { key: 'zone', icon: <Square className="h-4 w-4" />, label: '区域', active: currentTool === 'zone' },
     { key: 'text', icon: <Type className="h-4 w-4" />, label: '文本', active: currentTool === 'text' },
@@ -61,7 +115,7 @@ export function MobileToolbar({
   return (
     <>
       {expandedCategory && (
-        <div className="absolute bottom-[52px] left-0 right-0 z-40">
+        <div className="absolute bottom-[calc(60px+env(safe-area-inset-bottom,0px))] left-0 right-0 z-40">
           <div className="absolute inset-0 -top-[100vh]" onClick={() => setExpandedCategory(null)} />
           <div className="relative max-h-[40vh] overflow-y-auto rounded-t-xl border-t border-border p-3 shadow-2xl panel-bg">
             {expandedCategory === 'player' && (
@@ -76,10 +130,10 @@ export function MobileToolbar({
                     ] as const).map(([tool, label, Icon]) => (
                       <button
                         key={tool}
-                        onClick={() => {
+                        {...createTapHandlers(`player-tool-${tool}`, () => {
                           onToolChange(tool);
                           setExpandedCategory(null);
-                        }}
+                        })}
                         className={`flex flex-col items-center gap-1 rounded-lg border py-2.5 text-xs transition-colors ${
                           currentTool === tool
                             ? 'border-primary/30 bg-primary/20 text-primary'
@@ -102,7 +156,7 @@ export function MobileToolbar({
                     ] as const).map(([team, label]) => (
                       <button
                         key={team}
-                        onClick={() => onPlayerPlacementTeamChange(team)}
+                        {...createTapHandlers(`player-team-${team}`, () => onPlayerPlacementTeamChange(team))}
                         className={`rounded-lg border px-3 py-2.5 text-xs font-medium transition-colors ${
                           playerPlacementTeam === team
                             ? 'border-primary/30 bg-primary/20 text-primary'
@@ -123,10 +177,10 @@ export function MobileToolbar({
                   {lineTools.map(({ tool, label, color }) => (
                     <button
                       key={tool}
-                      onClick={() => {
+                      {...createTapHandlers(`line-tool-${tool}`, () => {
                         onToolChange(tool);
                         setExpandedCategory(null);
-                      }}
+                      })}
                       className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-xs transition-colors ${
                         currentTool === tool
                           ? 'border-primary/30 bg-primary/20 text-primary'
@@ -144,10 +198,10 @@ export function MobileToolbar({
               <div className="space-y-2">
                 <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">文本工具</h4>
                 <button
-                  onClick={() => {
+                  {...createTapHandlers('text-tool', () => {
                     onToolChange('text');
                     setExpandedCategory(null);
-                  }}
+                  })}
                   className={`flex w-full items-center gap-2 rounded-lg border px-3 py-2.5 text-xs transition-colors ${
                     currentTool === 'text'
                       ? 'border-primary/30 bg-primary/20 text-primary'
@@ -163,10 +217,10 @@ export function MobileToolbar({
               <div className="space-y-2">
                 <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">区域工具</h4>
                 <button
-                  onClick={() => {
+                  {...createTapHandlers('zone-tool', () => {
                     onToolChange('zone');
                     setExpandedCategory(null);
-                  }}
+                  })}
                   className={`flex w-full items-center gap-2 rounded-lg border px-3 py-2.5 text-xs transition-colors ${
                     currentTool === 'zone'
                       ? 'border-primary/30 bg-primary/20 text-primary'
@@ -182,11 +236,11 @@ export function MobileToolbar({
         </div>
       )}
 
-      <div className="relative z-50 flex h-[52px] shrink-0 items-center justify-around border-t border-border px-1 toolbar-bg">
+      <div className="safe-bottom relative z-50 flex min-h-[60px] shrink-0 items-center gap-1 overflow-x-auto border-t border-border px-1.5 toolbar-bg">
         {entries.map((entry) => (
           <button
             key={entry.key}
-            onClick={() => {
+            {...createTapHandlers(`toolbar-entry-${entry.key}`, () => {
               if (entry.key === 'steps') {
                 onOpenSteps();
                 setExpandedCategory(null);
@@ -199,6 +253,12 @@ export function MobileToolbar({
                 return;
               }
 
+              if (entry.key === 'formations') {
+                onOpenFormations();
+                setExpandedCategory(null);
+                return;
+              }
+
               if (entry.key === 'select') {
                 onToolChange('select');
                 setExpandedCategory(null);
@@ -206,11 +266,11 @@ export function MobileToolbar({
               }
 
               toggleCategory(entry.key as ToolCategory);
-            }}
-            className={`flex flex-col items-center gap-0.5 rounded-md px-2 py-1 text-[10px] transition-colors ${
+            })}
+            className={`flex min-w-[40px] flex-1 basis-0 flex-col items-center gap-1 rounded-lg px-1.5 py-1.5 text-[10px] transition-colors ${
               entry.active || expandedCategory === entry.key
                 ? 'text-primary'
-                : 'text-muted-foreground'
+                : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground'
             }`}
           >
             {entry.icon}

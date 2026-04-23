@@ -483,7 +483,7 @@ export async function renderFrameToCanvas({
     toCanvasY(step.ball.y, layout.pitchHeight),
   );
 
-  step.players.forEach((player) => {
+  for (const player of step.players) {
     const x = toCanvasX(player.x, layout.pitchWidth);
     const y = toCanvasY(player.y, layout.pitchHeight);
     const isHome = player.team === 'home';
@@ -499,17 +499,38 @@ export async function renderFrameToCanvas({
       context.lineWidth = 1;
       context.stroke();
 
+      if (player.avatarLocalUri) {
+        try {
+          const avatarImage = await loadImage(player.avatarLocalUri);
+          context.save();
+          context.beginPath();
+          context.arc(x, y - 10, 6.2, 0, Math.PI * 2);
+          context.closePath();
+          context.clip();
+          context.drawImage(avatarImage, x - 6.2, y - 16.2, 12.4, 12.4);
+          context.restore();
+
+          context.beginPath();
+          context.arc(x, y - 10, 6.7, 0, Math.PI * 2);
+          context.strokeStyle = 'rgba(255,255,255,0.42)';
+          context.lineWidth = 0.8;
+          context.stroke();
+        } catch {
+          // Ignore avatar rendering failures so export can proceed with number/name fallback.
+        }
+      }
+
       context.fillStyle = '#ffffff';
       context.font = '700 12px "Segoe UI", sans-serif';
       context.textAlign = 'center';
       context.textBaseline = 'middle';
-      context.fillText(String(player.number), x, y - 3);
+      context.fillText(String(player.number), x, player.avatarLocalUri ? y + 2 : y - 3);
 
       context.fillStyle = 'rgba(255,255,255,0.82)';
       context.font = '500 6px "Segoe UI", sans-serif';
-      context.fillText(player.name.slice(0, 2), x, y + 10);
+      context.fillText(player.name.slice(0, 2), x, player.avatarLocalUri ? y + 11 : y + 10);
       context.restore();
-      return;
+      continue;
     }
 
     context.beginPath();
@@ -530,7 +551,7 @@ export async function renderFrameToCanvas({
     context.font = '500 7px "Segoe UI", sans-serif';
     context.fillText(player.name.length > 3 ? player.name.slice(0, 3) : player.name, x, y + 22);
     context.restore();
-  });
+  }
 
   if (config.includeStepInfo) {
     context.save();

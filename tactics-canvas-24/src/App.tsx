@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AndroidShareReturnGuard } from "@/components/app/AndroidShareReturnGuard";
 import { AppShellV2 } from "@/components/v2/AppShellV2";
 import { WorkspaceProvider } from "@/context/workspace-context.tsx";
 import { createAppRouter } from "@/lib/platform";
@@ -21,16 +22,19 @@ const App = () => (
       <Sonner />
       <WorkspaceProvider>
         {createAppRouter(
-          <Routes>
-            <Route element={<AppShellV2 />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/projects" element={<Projects />} />
-              <Route path="/settings" element={<Settings />} />
-            </Route>
-            <Route path="/editor" element={<Editor />} />
-            <Route path="/editor/:projectId" element={<Editor />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <>
+            <AndroidShareReturnGuard />
+            <Routes>
+              <Route element={<AppShellV2 />}>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/settings" element={<Settings />} />
+              </Route>
+              <Route path="/editor" element={<Editor />} />
+              <Route path="/editor/:projectId" element={<Editor />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </>
         )}
       </WorkspaceProvider>
     </TooltipProvider>

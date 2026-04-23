@@ -18,7 +18,7 @@ export function TopNavV2() {
   return (
     <>
       {/* Desktop / tablet top bar */}
-      <header className="sticky top-0 z-50 flex h-12 shrink-0 items-center gap-3 border-b border-border/30 bg-panel/80 px-4 backdrop-blur-xl sm:px-5">
+      <header className="safe-top sticky top-0 z-50 flex min-h-12 shrink-0 items-center gap-3 border-b border-border/30 bg-panel/80 px-4 backdrop-blur-xl sm:px-5">
         <button
           onClick={() => navigate('/')}
           className="mr-2 flex shrink-0 items-center gap-2"
@@ -57,7 +57,7 @@ export function TopNavV2() {
       </header>
 
       {/* Mobile bottom nav */}
-      <nav className="safe-bottom fixed bottom-0 left-0 right-0 z-50 flex h-14 items-center justify-around border-t border-border/30 bg-panel/95 backdrop-blur-xl md:hidden">
+      <nav className="safe-bottom fixed bottom-0 left-0 right-0 z-50 flex min-h-14 items-center justify-around border-t border-border/30 bg-panel/95 backdrop-blur-xl md:hidden">
         {navLinks.map((link) => {
           const Icon = link.icon;
           const isActive = ('exact' in link && link.exact)

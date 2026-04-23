@@ -13,9 +13,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  clearPendingAndroidShareReturn,
+  rememberAndroidShareReturnRoute,
+} from '@/lib/android-share-return';
 import { normalizeProjectNameValue } from '@/lib/project-name';
+import { createEditorPersistenceFingerprint } from '@/lib/editor-persistence';
 import { createDefaultExportConfig } from '@/lib/export-config';
 import { saveExportBinary } from '@/lib/export-save';
+import { getRuntimePlatform } from '@/lib/platform';
 import { getGifConstraintMessage } from '@/lib/tactics-export';
 import { toast } from '@/components/ui/sonner';
 import { TopToolbar, type ToolbarSaveStatusTone } from './TopToolbar';
@@ -26,6 +32,7 @@ import { BottomStepBar } from './BottomStepBar';
 import { MobileToolbar } from './MobileToolbar';
 import { MobileStepsDrawer } from './MobileStepsDrawer';
 import { MobilePropertiesDrawer } from './MobilePropertiesDrawer';
+import { MobileFormationsDrawer } from './MobileFormationsDrawer';
 import { TabletLeftDrawer } from './TabletLeftDrawer';
 import { TabletRightDrawer } from './TabletRightDrawer';
 import { TabletToolStrip } from './TabletToolStrip';
@@ -60,6 +67,24 @@ const formatLabels: Record<FieldFormat, string> = {
   '7v7': '7人制',
   '5v5': '5人制',
 };
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== 'string') {
+        reject(new Error('Imported image did not produce a data URL.'));
+        return;
+      }
+
+      resolve(reader.result);
+    };
+    reader.onerror = () => {
+      reject(new Error('Failed to read imported image.'));
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEditorProps) {
   const { workspace } = useWorkspace();
@@ -122,12 +147,14 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
   const pitchCanvasRef = useRef<PitchCanvasHandle>(null);
   const lastSavedFingerprintRef = useRef<string | null>(null);
   const pendingSaveKindRef = useRef<EditorSaveKind>(null);
+  const changeFingerprintRef = useRef<string>('');
 
   const [zoomPercentage, setZoomPercentage] = useState(100);
   const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
   const [rightDrawerOpen, setRightDrawerOpen] = useState(false);
   const [stepsDrawerOpen, setStepsDrawerOpen] = useState(false);
   const [propsDrawerOpen, setPropsDrawerOpen] = useState(false);
+  const [formationsDrawerOpen, setFormationsDrawerOpen] = useState(false);
   const [pendingFieldFormat, setPendingFieldFormat] = useState<FieldFormat | null>(null);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [exportConfig, setExportConfig] = useState<ExportConfig>(() => createDefaultExportConfig());
@@ -153,29 +180,13 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
   const hasFormalProject = Boolean(projectId || activeProjectId);
   const displayProjectName = normalizeProjectNameValue(state.projectName);
   const changeFingerprint = useMemo(
-    () => JSON.stringify({
-      projectName: state.projectName,
-      fieldFormat: state.fieldFormat,
-      fieldView: state.fieldView,
-      fieldStyle: state.fieldStyle,
-      playerStyle: state.playerStyle,
-      matchMeta: state.matchMeta,
-      referenceImage: state.referenceImage,
-      currentStepIndex: state.currentStepIndex,
-      steps: state.steps,
-    }),
-    [
-      state.currentStepIndex,
-      state.fieldFormat,
-      state.fieldStyle,
-      state.fieldView,
-      state.matchMeta,
-      state.playerStyle,
-      state.projectName,
-      state.referenceImage,
-      state.steps,
-    ],
+    () => createEditorPersistenceFingerprint(state),
+    [state],
   );
+
+  useEffect(() => {
+    changeFingerprintRef.current = changeFingerprint;
+  }, [changeFingerprint]);
 
   useEffect(() => {
     if (!canIncludeReferenceImage && exportConfig.includeReferenceImage) {
@@ -200,7 +211,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
     const routeSaveKind = routeState?.editorSaveKind ?? null;
     setActiveProjectId(projectId ?? null);
     if (entrySource === 'project-saved') {
-      lastSavedFingerprintRef.current = changeFingerprint;
+      lastSavedFingerprintRef.current = changeFingerprintRef.current;
       setSaveStatus('saved');
       setLastSaveKind(routeSaveKind ?? pendingSaveKindRef.current ?? 'update');
     } else {
@@ -209,7 +220,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
       setLastSaveKind(null);
     }
     pendingSaveKindRef.current = null;
-  }, [changeFingerprint, entrySource, location.state, projectId]);
+  }, [entrySource, location.state, projectId]);
 
   useEffect(() => {
     const lastSavedFingerprint = lastSavedFingerprintRef.current;
@@ -278,8 +289,19 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
     returnToWorkspace?: boolean;
   }) => {
     setSaveStatus('saving');
+    const previousSavedFingerprint = lastSavedFingerprintRef.current;
 
-    const savedProjectId = saveProject();
+    let savedProjectId: string;
+    try {
+      savedProjectId = saveProject();
+    } catch {
+      pendingSaveKindRef.current = null;
+      lastSavedFingerprintRef.current = previousSavedFingerprint;
+      setSaveStatus(previousSavedFingerprint === changeFingerprint ? 'saved' : 'unsaved');
+      toast.error('保存失败，请稍后重试');
+      return null;
+    }
+
     const firstSave = !projectId && !activeProjectId;
     const nextSaveKind: EditorSaveKind = firstSave ? 'first' : 'update';
 
@@ -380,43 +402,52 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
     }
 
     try {
+      const isAndroidPngShare =
+        exportConfig.format === 'png' && getRuntimePlatform() === 'android-tauri';
       const bytes =
         exportConfig.format === 'gif'
           ? await pitchCanvasRef.current.exportGif(displayProjectName, exportConfig)
           : await pitchCanvasRef.current.exportPng(displayProjectName, exportConfig);
+      if (isAndroidPngShare) {
+        rememberAndroidShareReturnRoute(`${location.pathname}${location.search}`);
+      }
       const saveResult = await saveExportBinary({
         fileName: displayProjectName,
         format: exportConfig.format,
         bytes,
       });
       if (saveResult.status === 'cancelled') {
+        clearPendingAndroidShareReturn();
         toast.message('已取消导出保存');
         return;
       }
       if (saveResult.status === 'failed') {
+        clearPendingAndroidShareReturn();
         toast.error('导出失败，请稍后重试', {
           description: saveResult.reason,
         });
         return;
       }
       setExportDialogOpen(false);
-      toast.success('已导出当前战术板', {
-        description: `${displayProjectName}.${exportConfig.format}`,
-      });
+      if (saveResult.status === 'shared') {
+        toast.success('已进入系统分享', {
+          description: `${displayProjectName}.${exportConfig.format}`,
+        });
+      } else {
+        clearPendingAndroidShareReturn();
+        toast.success('已导出当前战术板', {
+          description: `${displayProjectName}.${exportConfig.format}`,
+        });
+      }
     } catch (error) {
+      clearPendingAndroidShareReturn();
       toast.error('导出失败，请稍后重试');
     }
-  }, [displayProjectName, exportConfig, state.steps.length]);
+  }, [displayProjectName, exportConfig, location.pathname, location.search, state.steps.length]);
 
-  const handleReferenceImageImport = useCallback((file: File) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      if (typeof result !== 'string') {
-        toast.error('参考底图导入失败，请重新选择图片');
-        return;
-      }
-
+  const handleReferenceImageImport = useCallback(async (file: File) => {
+    try {
+      const result = await readFileAsDataUrl(file);
       const nextImage: ReferenceImage = {
         id: `reference-${Date.now()}`,
         name: file.name,
@@ -433,12 +464,33 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
       toast.success('已导入参考底图', {
         description: file.name,
       });
-    };
-    reader.onerror = () => {
+    } catch {
       toast.error('参考底图导入失败，请重新选择图片');
-    };
-    reader.readAsDataURL(file);
+    }
   }, [setReferenceImage]);
+
+  const handlePlayerAvatarImport = useCallback(async (file: File) => {
+    try {
+      const result = await readFileAsDataUrl(file);
+      updateSelectedPlayer((player) => ({
+        ...player,
+        avatarLocalUri: result,
+      }));
+      toast.success('已导入球员头像', {
+        description: file.name,
+      });
+    } catch {
+      toast.error('球员头像导入失败，请重新选择图片');
+    }
+  }, [updateSelectedPlayer]);
+
+  const handlePlayerAvatarRemove = useCallback(() => {
+    updateSelectedPlayer((player) => ({
+      ...player,
+      avatarLocalUri: undefined,
+    }));
+    toast.success('已移除球员头像');
+  }, [updateSelectedPlayer]);
 
   const rightPanelProps = {
     projectName: displayProjectName,
@@ -461,6 +513,8 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
       setPlayerPlacementTeam(team);
       updateSelectedPlayer((player) => ({ ...player, team }));
     },
+    onPlayerAvatarImport: handlePlayerAvatarImport,
+    onPlayerAvatarRemove: handlePlayerAvatarRemove,
     onDeletePlayer: removeSelectedPlayer,
     onTextContentChange: (text: string) => updateSelectedText((textNote) => ({ ...textNote, text })),
     onTextStyleChange: (style: 'title' | 'body' | 'emphasis') => updateSelectedText((textNote) => ({ ...textNote, style })),
@@ -529,7 +583,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
   if (isDesktop) {
     return (
       <>
-        <div className="flex h-screen w-screen flex-col overflow-hidden">
+        <div className="app-screen flex w-full flex-col overflow-hidden">
           <TopToolbar
             projectId={projectId}
             projectName={displayProjectName}
@@ -555,7 +609,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
             onExport={openExportDialog}
             onReturnToWorkspace={handleReturnToWorkspace}
           />
-          <div className="flex flex-1 overflow-hidden">
+          <div className="flex min-h-0 flex-1 overflow-hidden">
             <LeftPanel
               currentTool={state.currentTool}
               fieldFormat={state.fieldFormat}
@@ -604,7 +658,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
   if (isTablet) {
     return (
       <>
-        <div className="flex h-screen w-screen flex-col overflow-hidden">
+        <div className="app-screen flex w-full flex-col overflow-hidden">
           <TopToolbar
             projectId={projectId}
             projectName={displayProjectName}
@@ -631,7 +685,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
             onReturnToWorkspace={handleReturnToWorkspace}
           />
 
-          <div className="relative flex-1 overflow-hidden">
+          <div className="relative flex min-h-0 flex-1 overflow-hidden">
             <TabletToolStrip
               onOpenTools={() => setLeftDrawerOpen(true)}
               onOpenFormations={() => setLeftDrawerOpen(true)}
@@ -696,7 +750,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
 
   return (
     <>
-      <div className="relative flex h-screen w-screen flex-col overflow-hidden">
+      <div className="app-screen relative flex w-full flex-col overflow-hidden">
         <MobileTopBar
           projectId={projectId}
           projectName={displayProjectName}
@@ -710,7 +764,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
           onExport={openExportDialog}
           onReturnToWorkspace={handleReturnToWorkspace}
         />
-        <div className="flex-1 overflow-hidden">
+        <div className="flex min-h-0 flex-1 overflow-hidden">
           <PitchCanvas ref={pitchCanvasRef} {...canvasProps} />
         </div>
         <MobileToolbar
@@ -721,6 +775,7 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
           onPlayerPlacementTeamChange={setPlayerPlacementTeam}
           onOpenSteps={() => setStepsDrawerOpen(true)}
           onOpenProperties={() => setPropsDrawerOpen(true)}
+          onOpenFormations={() => setFormationsDrawerOpen(true)}
         />
 
         <MobileStepsDrawer
@@ -744,6 +799,12 @@ export function TacticsEditor({ projectId, presetId, mode = 'new' }: TacticsEdit
           open={propsDrawerOpen}
           onClose={() => setPropsDrawerOpen(false)}
           {...rightPanelProps}
+        />
+        <MobileFormationsDrawer
+          open={formationsDrawerOpen}
+          fieldFormat={state.fieldFormat}
+          onClose={() => setFormationsDrawerOpen(false)}
+          onApplyFormation={applyFormation}
         />
       </div>
       <FieldFormatChangeDialog

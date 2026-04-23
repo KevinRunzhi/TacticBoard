@@ -101,6 +101,9 @@ Android：
 - 承担完整编辑主链路
 - 优先保证触控操作、PNG 导出和系统分享稳定
 - 首发不强制承诺 GIF 导出
+- 首发以 GitHub Releases 下载 APK、手动安装和手动更新为主
+- 当前目标支持 Android 10 及以上
+- Android 阶段细化与关闭条件以 `docs/05-engineering/android-packaging-plan.md` 和 `docs/android-packaging/` 为准
 
 ## 7. V1 交付标准
 

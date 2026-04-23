@@ -19,7 +19,7 @@ import { toast } from '@/components/ui/sonner';
 import { canUseNativeImageImport, pickImageFile } from '@/lib/asset-import';
 import { AreaObject, MatchMeta, Player, PlayerStyle, ReferenceImage, TacticsLine, TextNote } from '@/types/tactics';
 
-interface RightPanelProps {
+export interface RightPanelProps {
   projectName: string;
   selectedPlayer: Player | null;
   selectedLine: TacticsLine | null;
@@ -37,6 +37,8 @@ interface RightPanelProps {
   onPlayerNumberChange: (number: number) => void;
   onPlayerPositionChange: (position: string) => void;
   onPlayerTeamChange: (team: Player['team']) => void;
+  onPlayerAvatarImport: (file: File) => void;
+  onPlayerAvatarRemove: () => void;
   onDeletePlayer: () => void;
   onTextContentChange: (text: string) => void;
   onTextStyleChange: (style: TextNote['style']) => void;
@@ -84,6 +86,8 @@ export function RightPanel({
   onPlayerNumberChange,
   onPlayerPositionChange,
   onPlayerTeamChange,
+  onPlayerAvatarImport,
+  onPlayerAvatarRemove,
   onDeletePlayer,
   onTextContentChange,
   onTextStyleChange,
@@ -125,6 +129,8 @@ export function RightPanel({
         onNumberChange={onPlayerNumberChange}
         onPositionChange={onPlayerPositionChange}
         onTeamChange={onPlayerTeamChange}
+        onAvatarImport={onPlayerAvatarImport}
+        onAvatarRemove={onPlayerAvatarRemove}
         onDelete={onDeletePlayer}
       />
     );
@@ -213,6 +219,8 @@ function PlayerProperties({
   onNumberChange,
   onPositionChange,
   onTeamChange,
+  onAvatarImport,
+  onAvatarRemove,
   onDelete,
 }: {
   player: Player;
@@ -221,14 +229,51 @@ function PlayerProperties({
   onNumberChange: (number: number) => void;
   onPositionChange: (position: string) => void;
   onTeamChange: (team: Player['team']) => void;
+  onAvatarImport: (file: File) => void;
+  onAvatarRemove: () => void;
   onDelete: () => void;
 }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const lastAvatarImportTriggerAtRef = useRef(0);
+
+  const handleAvatarButtonClick = async () => {
+    if (!canUseNativeImageImport()) {
+      fileInputRef.current?.click();
+      return;
+    }
+
+    const result = await pickImageFile();
+    if (result.status === 'selected') {
+      onAvatarImport(result.file);
+      return;
+    }
+    if (result.status === 'failed') {
+      toast.error('球员头像导入失败，请重新选择图片', {
+        description: result.reason,
+      });
+    }
+  };
+
+  const triggerAvatarImport = () => {
+    const now = Date.now();
+    if (now - lastAvatarImportTriggerAtRef.current < 400) {
+      return;
+    }
+
+    lastAvatarImportTriggerAtRef.current = now;
+    void handleAvatarButtonClick();
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="player-properties space-y-4">
       <div className="flex items-center justify-center py-4">
-        <div className={`flex h-16 w-16 items-center justify-center rounded-full text-xl font-bold ${
+        <div className={`relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full text-xl font-bold ${
           player.team === 'home' ? 'bg-team-home' : 'bg-team-away'
         } text-foreground`}>
+          {player.avatarLocalUri ? (
+            <img src={player.avatarLocalUri} alt={`${player.name} avatar`} className="absolute inset-0 h-full w-full object-cover" />
+          ) : null}
+          <div className="absolute inset-0 bg-black/20" />
           {player.number}
         </div>
       </div>
@@ -260,10 +305,67 @@ function PlayerProperties({
         </PropRow>
       </PropSection>
 
+      <DangerButton onClick={onDelete}>删除球员</DangerButton>
+
       <PropSection title="显示信息">
         <PropRow label="显示样式">
           <div className="prop-select cursor-default">{style === 'dot' ? '圆点' : '球衣卡片'}</div>
         </PropRow>
+      </PropSection>
+
+      <PropSection title="球员头像">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            onAvatarImport(file);
+            event.target.value = '';
+          }}
+        />
+
+        <button
+          onClick={triggerAvatarImport}
+          onPointerUp={(event) => {
+            if (event.pointerType === 'touch') {
+              event.preventDefault();
+              triggerAvatarImport();
+            }
+          }}
+          onTouchEnd={(event) => {
+            event.preventDefault();
+            triggerAvatarImport();
+          }}
+          className="flex w-full touch-manipulation items-center justify-center gap-2 rounded-lg border border-border/60 bg-secondary/40 px-3 py-2 text-xs font-medium text-foreground/80 transition-colors hover:bg-secondary"
+        >
+          <ImageUp className="h-3.5 w-3.5" />
+          {player.avatarLocalUri ? '替换球员头像' : '导入球员头像'}
+        </button>
+
+        {player.avatarLocalUri ? (
+          <div className="space-y-3 rounded-xl border border-border/40 bg-card/60 p-3">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 overflow-hidden rounded-full border border-border/50 bg-muted/30">
+                <img src={player.avatarLocalUri} alt={`${player.name} avatar preview`} className="h-full w-full object-cover" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-medium text-foreground/85">{player.name || '当前球员'}</div>
+                <div className="mt-1 text-[11px] text-muted-foreground">
+                  头像会复制到本地项目存储中，并在球衣卡片样式下显示。
+                </div>
+              </div>
+            </div>
+
+            <DangerButton onClick={onAvatarRemove}>移除球员头像</DangerButton>
+          </div>
+        ) : (
+          <div className="rounded-lg border border-dashed border-border/70 bg-muted/20 px-3 py-3 text-[11px] leading-5 text-muted-foreground">
+            当前只在球衣卡片样式中显示头像；圆点样式不会渲染头像，但导入后仍会随项目一起保存。
+          </div>
+        )}
       </PropSection>
 
       <PropSection title="坐标">
@@ -482,6 +584,7 @@ function ProjectProperties({
   onReferenceImageRemove: () => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const lastReferenceImportTriggerAtRef = useRef(0);
 
   const handleReferenceImageButtonClick = async () => {
     if (!canUseNativeImageImport()) {
@@ -499,6 +602,16 @@ function ProjectProperties({
         description: result.reason,
       });
     }
+  };
+
+  const triggerReferenceImport = () => {
+    const now = Date.now();
+    if (now - lastReferenceImportTriggerAtRef.current < 400) {
+      return;
+    }
+
+    lastReferenceImportTriggerAtRef.current = now;
+    void handleReferenceImageButtonClick();
   };
 
   return (
@@ -548,10 +661,18 @@ function ProjectProperties({
         />
 
         <button
-          onClick={() => {
-            void handleReferenceImageButtonClick();
+          onClick={triggerReferenceImport}
+          onPointerUp={(event) => {
+            if (event.pointerType === 'touch') {
+              event.preventDefault();
+              triggerReferenceImport();
+            }
           }}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border border-border/60 bg-secondary/40 px-3 py-2 text-xs font-medium text-foreground/80 transition-colors hover:bg-secondary"
+          onTouchEnd={(event) => {
+            event.preventDefault();
+            triggerReferenceImport();
+          }}
+          className="flex w-full touch-manipulation items-center justify-center gap-2 rounded-lg border border-border/60 bg-secondary/40 px-3 py-2 text-xs font-medium text-foreground/80 transition-colors hover:bg-secondary"
         >
           <ImageUp className="h-3.5 w-3.5" />
           {referenceImage ? '替换参考底图' : '导入参考底图'}

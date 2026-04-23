@@ -17,6 +17,8 @@
 说明：
 
 - `MatchMeta` 和项目级 `ReferenceImage` 作为 `Project` 的组成部分随 `Project` 一起写入，不单独持久化
+- `ExportConfig` 在第一阶段默认不作为独立持久化对象写入；它属于导出时的临时配置，除非后续版本明确把导出预设纳入持久化范围
+- 最近项目列表和项目索引由 `ProjectIndexEntry` 负责，`LocalDraft` 不承担项目列表索引职责
 
 ## 3. 写入时机
 
@@ -76,6 +78,7 @@ ProjectIndexEntry：
 - 抽屉开关
 - 画布临时缩放与视角
 - 导出弹窗临时输入
+- `ExportConfig` 当前会话中的临时组合值
 
 ## 9. 当前不做
 

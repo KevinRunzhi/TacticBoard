@@ -16,6 +16,7 @@ import {
 } from '@/types/tactics';
 import { ZoomIn, ZoomOut, Maximize, RotateCcw, Hand, Mouse } from 'lucide-react';
 import { applyExportConfigToSvg, createDefaultExportConfig, getExportScale } from '@/lib/export-config';
+import { calculatePitchFitZoom, clampPitchPan } from '@/lib/pitch-viewport';
 import { exportStepsAsGif, exportSvgAsPng, META_TEXT_SEPARATOR } from '@/lib/tactics-export';
 
 interface PitchCanvasProps {
@@ -112,6 +113,7 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
   const [pendingLineStart, setPendingLineStart] = useState<{ x: number; y: number } | null>(null);
 
   // Canvas transform state
+  const [fitScale, setFitScale] = useState(1);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
@@ -119,6 +121,9 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
   const [showHint, setShowHint] = useState(false);
   const panStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
   const userAdjustedViewRef = useRef(false);
+  const fitScaleRef = useRef(1);
+  const zoomRef = useRef(1);
+  const panRef = useRef({ x: 0, y: 0 });
 
   const isRealistic = fieldStyle === 'realistic';
   const isHalf = fieldView === 'half';
@@ -137,6 +142,45 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
 
   const toSvgX = (pct: number) => padding + (pct / 100) * pw;
   const toSvgY = (pct: number) => padding + (pct / 100) * ph;
+  const getViewportDimensions = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) {
+      return null;
+    }
+
+    return {
+      containerWidth: container.clientWidth,
+      containerHeight: container.clientHeight,
+      canvasWidth: vw,
+      canvasHeight: vh,
+    };
+  }, [vh, vw]);
+
+  const applyViewport = useCallback((
+    nextZoom: number,
+    nextPan: { x: number; y: number },
+    options?: { fitScale?: number; markAdjusted?: boolean },
+  ) => {
+    const dimensions = getViewportDimensions();
+    const nextFitScale = options?.fitScale ?? fitScaleRef.current;
+    const clampedPan = dimensions ? clampPitchPan(nextPan, nextZoom, {
+      ...dimensions,
+      displayWidth: dimensions.canvasWidth * nextFitScale,
+      displayHeight: dimensions.canvasHeight * nextFitScale,
+    }) : nextPan;
+
+    if (options?.markAdjusted !== false) {
+      userAdjustedViewRef.current = true;
+    }
+
+    fitScaleRef.current = nextFitScale;
+    zoomRef.current = nextZoom;
+    panRef.current = clampedPan;
+    setFitScale(nextFitScale);
+    setZoom(nextZoom);
+    setPan(clampedPan);
+  }, [getViewportDimensions]);
+
   const toPercentPoint = useCallback((clientX: number, clientY: number) => {
     const svg = svgRef.current;
     if (!svg) return null;
@@ -158,32 +202,56 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
     }
   }, [isLineTool]);
 
-  // Fit to viewport: compute scale to fit SVG in container
   const fitToView = useCallback(() => {
-    const container = containerRef.current;
-    if (!container) {
+    const dimensions = getViewportDimensions();
+    if (!dimensions) {
+      fitScaleRef.current = 1;
+      zoomRef.current = 1;
+      panRef.current = { x: 0, y: 0 };
+      setFitScale(1);
       setZoom(1);
       setPan({ x: 0, y: 0 });
       return;
     }
-    const cw = container.clientWidth;
-    const ch = container.clientHeight;
-    const margin = 24; // px padding around pitch
-    const availW = cw - margin * 2;
-    const availH = ch - margin * 2;
-    const scaleW = availW / vw;
-    const scaleH = availH / vh;
-    const fitZoom = Math.min(scaleW, scaleH, 1); // never exceed 100%
-    setZoom(fitZoom);
-    setPan({ x: 0, y: 0 });
-    userAdjustedViewRef.current = false;
-  }, [vw, vh]);
 
-  // Auto fit on mount and on fieldView change
+    const nextFitScale = calculatePitchFitZoom(dimensions);
+    userAdjustedViewRef.current = false;
+    applyViewport(1, { x: 0, y: 0 }, {
+      fitScale: nextFitScale,
+      markAdjusted: false,
+    });
+  }, [applyViewport, getViewportDimensions]);
+
+  const resetView = useCallback(() => {
+    applyViewport(1, { x: 0, y: 0 }, { markAdjusted: false });
+  }, [applyViewport]);
+
   useEffect(() => {
-    // Small delay to ensure container is measured
-    const t = setTimeout(fitToView, 50);
-    return () => clearTimeout(t);
+    zoomRef.current = zoom;
+  }, [zoom]);
+
+  useEffect(() => {
+    fitScaleRef.current = fitScale;
+  }, [fitScale]);
+
+  useEffect(() => {
+    panRef.current = pan;
+  }, [pan]);
+
+  useEffect(() => {
+    let frameA = 0;
+    let frameB = 0;
+
+    frameA = requestAnimationFrame(() => {
+      frameB = requestAnimationFrame(() => {
+        fitToView();
+      });
+    });
+
+    return () => {
+      cancelAnimationFrame(frameA);
+      cancelAnimationFrame(frameB);
+    };
   }, [fieldView, fitToView]);
 
   useEffect(() => {
@@ -191,14 +259,25 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
     if (!container || typeof ResizeObserver === 'undefined') return;
 
     const observer = new ResizeObserver(() => {
+      const dimensions = getViewportDimensions();
+      if (!dimensions) {
+        return;
+      }
+
       if (!userAdjustedViewRef.current) {
         fitToView();
+        return;
       }
+
+      applyViewport(zoomRef.current, panRef.current, {
+        fitScale: calculatePitchFitZoom(dimensions),
+        markAdjusted: false,
+      });
     });
 
     observer.observe(container);
     return () => observer.disconnect();
-  }, [fitToView]);
+  }, [applyViewport, fitToView, getViewportDimensions]);
 
   // First-time hint
   useEffect(() => {
@@ -240,12 +319,13 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const delta = -e.deltaY * 0.001;
-      userAdjustedViewRef.current = true;
-      setZoom(z => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z + delta * z)));
+      const currentZoom = zoomRef.current;
+      const nextZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, currentZoom + delta * currentZoom));
+      applyViewport(nextZoom, panRef.current);
     };
     container.addEventListener('wheel', onWheel, { passive: false });
     return () => container.removeEventListener('wheel', onWheel);
-  }, []);
+  }, [applyViewport]);
 
   // Touch zoom & pan
   const lastTouchDist = useRef<number | null>(null);
@@ -253,6 +333,8 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (e.touches.length === 2) {
+      e.preventDefault();
+      setIsPanning(false);
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       lastTouchDist.current = Math.hypot(dx, dy);
@@ -269,9 +351,9 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
       && currentTool === 'select'
     ) {
       setIsPanning(true);
-      panStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, panX: pan.x, panY: pan.y };
+      panStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, panX: panRef.current.x, panY: panRef.current.y };
     }
-  }, [currentTool, draggingArea, draggingBall, draggingPlayer, draggingText, pan]);
+  }, [currentTool, draggingArea, draggingBall, draggingPlayer, draggingText]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (e.touches.length === 2) {
@@ -281,36 +363,73 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
       const dist = Math.hypot(dx, dy);
       if (lastTouchDist.current) {
         const scale = dist / lastTouchDist.current;
-        userAdjustedViewRef.current = true;
-        setZoom(z => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z * scale)));
+        const nextZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoomRef.current * scale));
+        const center = {
+          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+          y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+        };
+        const nextPan = lastTouchCenter.current
+          ? {
+              x: panRef.current.x + (center.x - lastTouchCenter.current.x),
+              y: panRef.current.y + (center.y - lastTouchCenter.current.y),
+            }
+          : panRef.current;
+        applyViewport(nextZoom, nextPan);
+        lastTouchCenter.current = center;
       }
       const center = {
         x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
         y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
       };
-      if (lastTouchCenter.current) {
-        userAdjustedViewRef.current = true;
-        setPan(p => ({
-          x: p.x + (center.x - lastTouchCenter.current!.x),
-          y: p.y + (center.y - lastTouchCenter.current!.y),
-        }));
-      }
       lastTouchDist.current = dist;
-      lastTouchCenter.current = center;
-    } else if (e.touches.length === 1 && isPanning) {
-      userAdjustedViewRef.current = true;
-      setPan({
-        x: panStart.current.panX + (e.touches[0].clientX - panStart.current.x),
-        y: panStart.current.panY + (e.touches[0].clientY - panStart.current.y),
-      });
+      lastTouchCenter.current ??= center;
+    } else if (e.touches.length === 1) {
+      const point = toPercentPoint(e.touches[0].clientX, e.touches[0].clientY);
+      if (point && draggingPlayer) {
+        e.preventDefault();
+        onMovePlayer(draggingPlayer, point.x, point.y);
+        return;
+      }
+
+      if (point && draggingText) {
+        e.preventDefault();
+        onMoveText(draggingText, point.x, point.y);
+        return;
+      }
+
+      if (point && draggingArea) {
+        e.preventDefault();
+        onMoveArea(draggingArea, point.x, point.y);
+        return;
+      }
+
+      if (point && draggingBall) {
+        e.preventDefault();
+        onMoveBall(point.x, point.y);
+        return;
+      }
+
+      if (isPanning) {
+        applyViewport(zoomRef.current, {
+          x: panStart.current.panX + (e.touches[0].clientX - panStart.current.x),
+          y: panStart.current.panY + (e.touches[0].clientY - panStart.current.y),
+        });
+      }
     }
-  }, [isPanning]);
+  }, [applyViewport, draggingArea, draggingBall, draggingPlayer, draggingText, isPanning, onMoveArea, onMoveBall, onMovePlayer, onMoveText, toPercentPoint]);
 
   const handleTouchEnd = useCallback(() => {
     lastTouchDist.current = null;
     lastTouchCenter.current = null;
     setIsPanning(false);
-  }, []);
+    if (draggingPlayer || draggingText || draggingArea || draggingBall) {
+      setDraggingPlayer(null);
+      setDraggingText(null);
+      setDraggingArea(null);
+      setDraggingBall(false);
+      onEndPlayerMove?.();
+    }
+  }, [draggingArea, draggingBall, draggingPlayer, draggingText, onEndPlayerMove]);
 
   // Mouse pan: space+left click, middle click, or left click on empty canvas (no selected object)
   const handleContainerMouseDown = useCallback((e: React.MouseEvent) => {
@@ -318,14 +437,14 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
     if (spaceHeld && e.button === 0) {
       e.preventDefault();
       setIsPanning(true);
-      panStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+      panStart.current = { x: e.clientX, y: e.clientY, panX: panRef.current.x, panY: panRef.current.y };
       return;
     }
     // Middle click = pan
     if (e.button === 1) {
       e.preventDefault();
       setIsPanning(true);
-      panStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+      panStart.current = { x: e.clientX, y: e.clientY, panX: panRef.current.x, panY: panRef.current.y };
       return;
     }
     // Left click on empty area (container or SVG background) = pan when no player selected
@@ -342,19 +461,18 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
       && !draggingBall
     ) {
       setIsPanning(true);
-      panStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+      panStart.current = { x: e.clientX, y: e.clientY, panX: panRef.current.x, panY: panRef.current.y };
     }
-  }, [currentTool, draggingArea, draggingBall, draggingPlayer, draggingText, pan, selectedAreaId, selectedLineId, selectedPlayerId, selectedTextId, spaceHeld]);
+  }, [currentTool, draggingArea, draggingBall, draggingPlayer, draggingText, selectedAreaId, selectedLineId, selectedPlayerId, selectedTextId, spaceHeld]);
 
   const handleContainerMouseMove = useCallback((e: React.MouseEvent) => {
     if (isPanning) {
-      userAdjustedViewRef.current = true;
-      setPan({
+      applyViewport(zoomRef.current, {
         x: panStart.current.panX + (e.clientX - panStart.current.x),
         y: panStart.current.panY + (e.clientY - panStart.current.y),
       });
     }
-  }, [isPanning]);
+  }, [applyViewport, isPanning]);
 
   const handleContainerMouseUp = useCallback(() => {
     setIsPanning(false);
@@ -363,6 +481,16 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
   // Player drag handlers
   const handlePlayerMouseDown = (playerId: string) => (e: React.MouseEvent) => {
     if (spaceHeld) return; // space held = pan mode, don't drag player
+    e.stopPropagation();
+    setPendingLineStart(null);
+    onBeginPlayerMove?.();
+    setDraggingPlayer(playerId);
+    onSelectPlayer(playerId);
+  };
+
+  const handlePlayerTouchStart = (playerId: string) => (e: React.TouchEvent) => {
+    if (spaceHeld || e.touches.length !== 1) return;
+    e.preventDefault();
     e.stopPropagation();
     setPendingLineStart(null);
     onBeginPlayerMove?.();
@@ -382,6 +510,19 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
     onSelectArea(null);
   };
 
+  const handleBallTouchStart = (e: React.TouchEvent) => {
+    if (spaceHeld || currentTool !== 'ball' || e.touches.length !== 1) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setPendingLineStart(null);
+    onBeginPlayerMove?.();
+    setDraggingBall(true);
+    onSelectPlayer(null);
+    onSelectLine(null);
+    onSelectText(null);
+    onSelectArea(null);
+  };
+
   const handleTextMouseDown = (textId: string) => (e: React.MouseEvent) => {
     if (spaceHeld) return;
     e.stopPropagation();
@@ -391,8 +532,28 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
     onSelectText(textId);
   };
 
+  const handleTextTouchStart = (textId: string) => (e: React.TouchEvent) => {
+    if (spaceHeld || e.touches.length !== 1) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setPendingLineStart(null);
+    onBeginPlayerMove?.();
+    setDraggingText(textId);
+    onSelectText(textId);
+  };
+
   const handleAreaMouseDown = (areaId: string) => (e: React.MouseEvent) => {
     if (spaceHeld) return;
+    e.stopPropagation();
+    setPendingLineStart(null);
+    onBeginPlayerMove?.();
+    setDraggingArea(areaId);
+    onSelectArea(areaId);
+  };
+
+  const handleAreaTouchStart = (areaId: string) => (e: React.TouchEvent) => {
+    if (spaceHeld || e.touches.length !== 1) return;
+    e.preventDefault();
     e.stopPropagation();
     setPendingLineStart(null);
     onBeginPlayerMove?.();
@@ -503,17 +664,19 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
       e.preventDefault();
       e.stopPropagation();
       setIsPanning(true);
-      panStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+      panStart.current = { x: e.clientX, y: e.clientY, panX: panRef.current.x, panY: panRef.current.y };
       return;
     }
     // Left click on SVG background (no player hit) = pan
     if (e.button === 0 && !selectedPlayerId && !selectedLineId && !selectedTextId && !selectedAreaId && !draggingPlayer && !draggingText && !draggingArea && !draggingBall && currentTool !== 'zone' && !isLineTool && currentTool !== 'player' && currentTool !== 'ball' && currentTool !== 'text') {
       setIsPanning(true);
-      panStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+      panStart.current = { x: e.clientX, y: e.clientY, panX: panRef.current.x, panY: panRef.current.y };
     }
-  }, [currentTool, draggingArea, draggingBall, draggingPlayer, draggingText, isLineTool, pan, selectedAreaId, selectedLineId, selectedPlayerId, selectedTextId, spaceHeld]);
+  }, [currentTool, draggingArea, draggingBall, draggingPlayer, draggingText, isLineTool, selectedAreaId, selectedLineId, selectedPlayerId, selectedTextId, spaceHeld]);
 
   const zoomPercent = Math.round(zoom * 100);
+  const renderedCanvasWidth = vw * fitScale;
+  const renderedCanvasHeight = vh * fitScale;
   const lineToolHint = isLineTool
     ? (pendingLineStart ? '请点击球场选择终点' : '请点击球场选择起点')
     : null;
@@ -531,19 +694,13 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
 
   useImperativeHandle(ref, () => ({
     zoomIn: () => {
-      userAdjustedViewRef.current = true;
-      setZoom((currentZoom) => Math.min(MAX_ZOOM, currentZoom + 0.15));
+      applyViewport(Math.min(MAX_ZOOM, zoomRef.current + 0.15), panRef.current);
     },
     zoomOut: () => {
-      userAdjustedViewRef.current = true;
-      setZoom((currentZoom) => Math.max(MIN_ZOOM, currentZoom - 0.15));
+      applyViewport(Math.max(MIN_ZOOM, zoomRef.current - 0.15), panRef.current);
     },
     fitToView,
-    resetView: () => {
-      userAdjustedViewRef.current = true;
-      setZoom(1);
-      setPan({ x: 0, y: 0 });
-    },
+    resetView,
     exportPng: async (fileName: string, config?: ExportConfig) => {
       const exportConfig = config ?? createDefaultExportConfig();
       const sourceSvg = svgRef.current;
@@ -572,13 +729,17 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
         config: exportConfig,
       });
     },
-  }), [allSteps, fieldStyle, fieldView, fitToView, matchMeta, playerStyle, projectName, referenceImage]);
+  }), [allSteps, applyViewport, fieldStyle, fieldView, fitToView, matchMeta, playerStyle, projectName, referenceImage, resetView]);
 
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-hidden bg-background/50 relative select-none"
-      style={{ cursor: cursorStyle }}
+      className="relative min-h-0 flex-1 overflow-hidden bg-background/50 select-none"
+      style={{
+        cursor: cursorStyle,
+        touchAction: 'none',
+        overscrollBehavior: 'contain',
+      }}
       onMouseDown={handleContainerMouseDown}
       onMouseMove={handleContainerMouseMove}
       onMouseUp={handleContainerMouseUp}
@@ -589,11 +750,12 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
     >
       {/* SVG canvas with transform */}
       <div
-        className="w-full h-full flex items-center justify-center"
+        className="flex h-full w-full items-center justify-center"
         style={{
           transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
           transformOrigin: 'center center',
           transition: isPanning || draggingPlayer || draggingText || draggingBall ? 'none' : 'transform 0.15s ease-out',
+          willChange: 'transform',
         }}
       >
         <svg
@@ -601,8 +763,8 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
           viewBox={`0 0 ${vw} ${vh}`}
           className="drop-shadow-2xl"
           style={{
-            width: `${vw}px`,
-            height: `${vh}px`,
+            width: `${renderedCanvasWidth}px`,
+            height: `${renderedCanvasHeight}px`,
             maxWidth: 'none',
           }}
           preserveAspectRatio="xMidYMid meet"
@@ -708,6 +870,7 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
                   cy={toSvgY(area.y)}
                   r={(radius / 100) * Math.min(pw, ph)}
                   onMouseDown={handleAreaMouseDown(area.id)}
+                  onTouchStart={handleAreaTouchStart(area.id)}
                   onClick={(event) => event.stopPropagation()}
                   style={{ cursor: spaceHeld ? 'grab' : 'move' }}
                   {...commonProps}
@@ -724,6 +887,7 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
                   rx={(area.width / 100) * pw / 2}
                   ry={(area.height / 100) * ph / 2}
                   onMouseDown={handleAreaMouseDown(area.id)}
+                  onTouchStart={handleAreaTouchStart(area.id)}
                   onClick={(event) => event.stopPropagation()}
                   style={{ cursor: spaceHeld ? 'grab' : 'move' }}
                   {...commonProps}
@@ -740,6 +904,7 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
                 height={(area.height / 100) * ph}
                 rx="10"
                 onMouseDown={handleAreaMouseDown(area.id)}
+                onTouchStart={handleAreaTouchStart(area.id)}
                 onClick={(event) => event.stopPropagation()}
                 style={{ cursor: spaceHeld ? 'grab' : 'move' }}
                 {...commonProps}
@@ -792,7 +957,13 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
 
           {/* Text notes */}
           {texts.map(t => (
-            <g key={t.id} onMouseDown={handleTextMouseDown(t.id)} onClick={(event) => { event.stopPropagation(); onSelectText(t.id); }} style={{ cursor: spaceHeld ? 'grab' : 'move' }}>
+            <g
+              key={t.id}
+              onMouseDown={handleTextMouseDown(t.id)}
+              onTouchStart={handleTextTouchStart(t.id)}
+              onClick={(event) => { event.stopPropagation(); onSelectText(t.id); }}
+              style={{ cursor: spaceHeld ? 'grab' : 'move' }}
+            >
               {selectedTextId === t.id ? (
                 <rect
                   x={toSvgX(t.x) - 34}
@@ -816,7 +987,11 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
           ))}
 
           {/* Ball */}
-          <g onMouseDown={handleBallMouseDown} style={{ cursor: currentTool === 'ball' && !spaceHeld ? 'grab' : 'default' }}>
+          <g
+            onMouseDown={handleBallMouseDown}
+            onTouchStart={handleBallTouchStart}
+            style={{ cursor: currentTool === 'ball' && !spaceHeld ? 'grab' : 'default' }}
+          >
             <SoccerBallGraphic cx={toSvgX(ball.x)} cy={toSvgY(ball.y)} />
           </g>
 
@@ -826,23 +1001,55 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
             const cy = toSvgY(player.y);
             const isSelected = selectedPlayerId === player.id;
             const isHome = player.team === 'home';
+            const avatarClipId = `player-avatar-clip-${player.id}`;
 
             if (playerStyle === 'card') {
               return (
-                <g key={player.id} onMouseDown={handlePlayerMouseDown(player.id)} style={{ cursor: spaceHeld ? 'grab' : 'grab' }} onClick={e => e.stopPropagation()}>
+                <g
+                  key={player.id}
+                  onMouseDown={handlePlayerMouseDown(player.id)}
+                  onTouchStart={handlePlayerTouchStart(player.id)}
+                  style={{ cursor: spaceHeld ? 'grab' : 'grab' }}
+                  onClick={e => e.stopPropagation()}
+                >
                   {isSelected && <rect x={cx - 16} y={cy - 22} width={32} height={40} rx={5} fill="none" stroke="hsl(var(--primary))" strokeWidth={2} strokeDasharray="3,2" />}
                   <rect x={cx - 14} y={cy - 20} width={28} height={36} rx={4}
                     fill={isHome ? 'hsl(210, 90%, 40%)' : 'hsl(0, 70%, 45%)'}
                     stroke={isHome ? 'hsl(210, 90%, 55%)' : 'hsl(0, 70%, 60%)'} strokeWidth={1}
                   />
-                  <text x={cx} y={cy - 4} textAnchor="middle" fill="#fff" fontSize={12} fontWeight={700}>{player.number}</text>
-                  <text x={cx} y={cy + 10} textAnchor="middle" fill="hsla(0,0%,100%,0.8)" fontSize={6}>{player.name.slice(0, 2)}</text>
+                  {player.avatarLocalUri ? (
+                    <>
+                      <defs>
+                        <clipPath id={avatarClipId}>
+                          <circle cx={cx} cy={cy - 10} r={6.2} />
+                        </clipPath>
+                      </defs>
+                      <circle cx={cx} cy={cy - 10} r={6.7} fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.42)" strokeWidth={0.8} />
+                      <image
+                        href={player.avatarLocalUri}
+                        x={cx - 6.2}
+                        y={cy - 16.2}
+                        width={12.4}
+                        height={12.4}
+                        preserveAspectRatio="xMidYMid slice"
+                        clipPath={`url(#${avatarClipId})`}
+                      />
+                    </>
+                  ) : null}
+                  <text x={cx} y={player.avatarLocalUri ? cy + 2 : cy - 4} textAnchor="middle" fill="#fff" fontSize={12} fontWeight={700}>{player.number}</text>
+                  <text x={cx} y={player.avatarLocalUri ? cy + 11 : cy + 10} textAnchor="middle" fill="hsla(0,0%,100%,0.8)" fontSize={6}>{player.name.slice(0, 2)}</text>
                 </g>
               );
             }
 
             return (
-              <g key={player.id} onMouseDown={handlePlayerMouseDown(player.id)} style={{ cursor: 'grab' }} onClick={e => e.stopPropagation()}>
+              <g
+                key={player.id}
+                onMouseDown={handlePlayerMouseDown(player.id)}
+                onTouchStart={handlePlayerTouchStart(player.id)}
+                style={{ cursor: 'grab' }}
+                onClick={e => e.stopPropagation()}
+              >
                 {isSelected && <circle cx={cx} cy={cy} r={16} fill="none" stroke="hsl(var(--primary))" strokeWidth={2} strokeDasharray="3,2" />}
                 <circle cx={cx} cy={cy} r={12}
                   fill={isHome ? 'hsl(210, 90%, 56%)' : 'hsl(0, 80%, 58%)'}
@@ -893,16 +1100,14 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
       {/* Zoom controls overlay */}
       <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1 panel-bg border border-border rounded-lg p-1 shadow-lg">
         <button onClick={() => {
-          userAdjustedViewRef.current = true;
-          setZoom(z => Math.max(MIN_ZOOM, z - 0.15));
+          applyViewport(Math.max(MIN_ZOOM, zoomRef.current - 0.15), panRef.current);
         }} title="缩小"
           className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
           <ZoomOut className="w-3.5 h-3.5" />
         </button>
         <span className="text-[10px] text-muted-foreground min-w-[32px] text-center">{zoomPercent}%</span>
         <button onClick={() => {
-          userAdjustedViewRef.current = true;
-          setZoom(z => Math.min(MAX_ZOOM, z + 0.15));
+          applyViewport(Math.min(MAX_ZOOM, zoomRef.current + 0.15), panRef.current);
         }} title="放大"
           className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
           <ZoomIn className="w-3.5 h-3.5" />
@@ -912,11 +1117,7 @@ export const PitchCanvas = forwardRef<PitchCanvasHandle, PitchCanvasProps>(funct
           className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
           <Maximize className="w-3.5 h-3.5" />
         </button>
-        <button onClick={() => {
-          userAdjustedViewRef.current = true;
-          setZoom(1);
-          setPan({ x: 0, y: 0 });
-        }} title="100%"
+        <button onClick={resetView} title="100%"
           className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
           <RotateCcw className="w-3.5 h-3.5" />
         </button>

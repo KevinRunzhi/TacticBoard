@@ -1,75 +1,31 @@
 import { X } from 'lucide-react';
-import { AreaObject, MatchMeta, Player, PlayerStyle, ReferenceImage } from '@/types/tactics';
-import { RightPanel } from './RightPanel';
+import { RightPanel, type RightPanelProps } from './RightPanel';
 
-interface MobilePropertiesDrawerProps {
+interface MobilePropertiesDrawerProps extends Omit<RightPanelProps, 'embedded'> {
   open: boolean;
   onClose: () => void;
-  projectName: string;
-  selectedPlayer: Player | null;
-  selectedArea: AreaObject | null;
-  playerStyle: PlayerStyle;
-  matchMeta: MatchMeta;
-  referenceImage: ReferenceImage | null;
-  stepDescription: string;
-  onProjectNameChange: (projectName: string) => void;
-  onMatchMetaChange: (field: keyof MatchMeta, value: string) => void;
-  onStepDescriptionChange: (description: string) => void;
-  onPlayerNameChange: (name: string) => void;
-  onPlayerNumberChange: (number: number) => void;
-  onPlayerPositionChange: (position: string) => void;
-  onAreaShapeChange: (shape: AreaObject['shape']) => void;
-  onAreaWidthChange: (width: number) => void;
-  onAreaHeightChange: (height: number) => void;
-  onAreaOpacityChange: (opacity: number) => void;
-  onAreaStrokeColorChange: (strokeColor: string) => void;
-  onAreaFillColorChange: (fillColor: string) => void;
-  onDeleteArea: () => void;
-  onReferenceImageImport: (file: File) => void;
-  onReferenceImageVisibilityChange: (visible: boolean) => void;
-  onReferenceImageOpacityChange: (opacity: number) => void;
-  onReferenceImageScaleChange: (scale: number) => void;
-  onReferenceImageOffsetXChange: (offsetX: number) => void;
-  onReferenceImageOffsetYChange: (offsetY: number) => void;
-  onReferenceImageResetTransform: () => void;
-  onReferenceImageRemove: () => void;
 }
 
 export function MobilePropertiesDrawer({
   open,
   onClose,
-  projectName,
   selectedPlayer,
+  selectedLine,
+  selectedText,
   selectedArea,
-  playerStyle,
-  matchMeta,
-  referenceImage,
-  stepDescription,
-  onProjectNameChange,
-  onMatchMetaChange,
-  onStepDescriptionChange,
-  onPlayerNameChange,
-  onPlayerNumberChange,
-  onPlayerPositionChange,
-  onAreaShapeChange,
-  onAreaWidthChange,
-  onAreaHeightChange,
-  onAreaOpacityChange,
-  onAreaStrokeColorChange,
-  onAreaFillColorChange,
-  onDeleteArea,
-  onReferenceImageImport,
-  onReferenceImageVisibilityChange,
-  onReferenceImageOpacityChange,
-  onReferenceImageScaleChange,
-  onReferenceImageOffsetXChange,
-  onReferenceImageOffsetYChange,
-  onReferenceImageResetTransform,
-  onReferenceImageRemove,
+  ...rightPanelProps
 }: MobilePropertiesDrawerProps) {
   if (!open) return null;
 
-  const title = selectedPlayer ? '球员属性' : selectedArea ? '区域属性' : '项目属性';
+  const title = selectedPlayer
+    ? '球员属性'
+    : selectedLine
+      ? '线路属性'
+      : selectedText
+        ? '文本属性'
+        : selectedArea
+          ? '区域属性'
+          : '项目属性';
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
@@ -85,44 +41,14 @@ export function MobilePropertiesDrawer({
             onClick={onClose}
             aria-label="关闭属性抽屉"
             title="关闭属性抽屉"
-            className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:text-foreground"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
-          <RightPanel
-            projectName={projectName}
-            selectedPlayer={selectedPlayer}
-            selectedArea={selectedArea}
-            playerStyle={playerStyle}
-            matchMeta={matchMeta}
-            referenceImage={referenceImage}
-            stepDescription={stepDescription}
-            onProjectNameChange={onProjectNameChange}
-            onMatchMetaChange={onMatchMetaChange}
-            onStepDescriptionChange={onStepDescriptionChange}
-            onPlayerNameChange={onPlayerNameChange}
-            onPlayerNumberChange={onPlayerNumberChange}
-            onPlayerPositionChange={onPlayerPositionChange}
-            onAreaShapeChange={onAreaShapeChange}
-            onAreaWidthChange={onAreaWidthChange}
-            onAreaHeightChange={onAreaHeightChange}
-            onAreaOpacityChange={onAreaOpacityChange}
-            onAreaStrokeColorChange={onAreaStrokeColorChange}
-            onAreaFillColorChange={onAreaFillColorChange}
-            onDeleteArea={onDeleteArea}
-            onReferenceImageImport={onReferenceImageImport}
-            onReferenceImageVisibilityChange={onReferenceImageVisibilityChange}
-            onReferenceImageOpacityChange={onReferenceImageOpacityChange}
-            onReferenceImageScaleChange={onReferenceImageScaleChange}
-            onReferenceImageOffsetXChange={onReferenceImageOffsetXChange}
-            onReferenceImageOffsetYChange={onReferenceImageOffsetYChange}
-            onReferenceImageResetTransform={onReferenceImageResetTransform}
-            onReferenceImageRemove={onReferenceImageRemove}
-            embedded
-          />
+          <RightPanel {...rightPanelProps} selectedPlayer={selectedPlayer} selectedLine={selectedLine} selectedText={selectedText} selectedArea={selectedArea} embedded />
         </div>
       </div>
     </div>

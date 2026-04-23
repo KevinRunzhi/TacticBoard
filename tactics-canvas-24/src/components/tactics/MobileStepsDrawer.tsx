@@ -53,7 +53,7 @@ export function MobileStepsDrawer({
               onClick={() => onStepChange(Math.max(0, currentIndex - 1))}
               aria-label="切换到上一步"
               title="切换到上一步"
-              className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary"
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -61,7 +61,7 @@ export function MobileStepsDrawer({
               onClick={onTogglePlay}
               aria-label={isPlaying ? '暂停步骤播放' : '播放步骤'}
               title={isPlaying ? '暂停步骤播放' : '播放步骤'}
-              className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground"
             >
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
             </button>
@@ -69,7 +69,7 @@ export function MobileStepsDrawer({
               onClick={() => onStepChange(Math.min(steps.length - 1, currentIndex + 1))}
               aria-label="切换到下一步"
               title="切换到下一步"
-              className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary"
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -77,7 +77,7 @@ export function MobileStepsDrawer({
               onClick={onClose}
               aria-label="关闭步骤抽屉"
               title="关闭步骤抽屉"
-              className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground ml-2"
+              className="ml-2 flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               <X className="w-4 h-4" />
             </button>
@@ -151,7 +151,7 @@ function ActionButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs transition-colors ${
+      className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs transition-colors ${
         danger
           ? 'border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15'
           : 'border-border bg-secondary/30 text-foreground/80 hover:bg-secondary'
