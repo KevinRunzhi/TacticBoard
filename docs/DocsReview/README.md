@@ -137,3 +137,4 @@ Recommended usage:
 - `implementation-review-63-signed-apk-reference-import-user-confirmation-2026-04-23.md`
 - `implementation-review-64-readme-and-release-doc-refresh-2026-04-23.md`
 - `implementation-review-65-readme-public-android-release-2026-04-24.md`
+- `implementation-review-66-readme-mobile-screenshots-2026-04-24.md`
